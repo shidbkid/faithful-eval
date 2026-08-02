@@ -1,3 +1,93 @@
-﻿# Faithful Eval
+# faithful-eval
 
-Independent research on evaluating faithfulness in language model outputs.
+How well do summary-faithfulness scorers that run **entirely on local
+hardware** detect unsupported claims — and what do they cost in latency and
+VRAM?
+
+Faithfulness benchmarks usually report correlation with human judgment and
+stop there, assuming an API-based frontier judge. Nobody reports
+quality-per-millisecond-per-gigabyte for scorers you can run inside a
+customer's firewall. This repo measures that trade-off.
+
+This is an independent, personal-time project built only on public datasets,
+public models, and public tooling.
+
+## Results
+
+**Status: partial.** The CPU scorers below were run on the full benchmark
+(1600 pairs). The model-based scorers (`bertscore`, `nli-deberta`,
+`llm-judge`) are implemented and smoke-tested but their numbers are pending
+a GPU run; this table and the plot regenerate automatically once that run
+completes (see *Reproducing*).
+
+| scorer | spearman | balanced acc | ROC-AUC | median ms/doc | peak VRAM (GB) |
+|---|---|---|---|---|---|
+| random | 0.013 | 0.516 | 0.506 | 0.0 | n/a |
+| rouge-l | 0.386 | 0.687 | 0.705 | 7.7 | n/a |
+| bertscore | *pending* | *pending* | *pending* | *pending* | *pending* |
+| nli-deberta | *pending* | *pending* | *pending* | *pending* | *pending* |
+| llm-judge | *pending* | *pending* | *pending* | *pending* | *pending* |
+
+![quality vs cost](results.png)
+
+CPU-only numbers above were measured on a cloud VM (no GPU); latency columns
+are only comparable within a single machine's run.
+
+## Benchmark
+
+**Dataset:** [SummEval](https://github.com/Yale-LILY/SummEval) — 100
+CNN/DailyMail articles × 16 system summaries, each rated 1–5 for
+*consistency* by 3 experts. Mean expert consistency is the faithfulness
+label. The loader fetches the processed copy vendored in the
+[BARTScore](https://github.com/neulab/BARTScore) repo (Apache-2.0), which
+pairs every summary with its source article; it is cached under `data/`.
+
+**Metrics per scorer:**
+
+- **spearman** — rank correlation of scorer output with mean expert consistency (1600 pairs).
+- **balanced acc / ROC-AUC** — binary task: *faithful* iff consistency = 5.0 (81.6% of pairs; all three experts rated it perfectly consistent). Balanced accuracy is reported at the best threshold over the scorer's own outputs — an oracle threshold, applied identically to every scorer.
+- **median ms/doc** — median wall-clock per `score(source, summary)` call.
+- **peak VRAM** — `torch.cuda.max_memory_allocated`, reset before each scorer; `n/a` on CPU.
+
+## Scorers
+
+Everything implements one interface (`scorers.py`):
+
+```python
+class Scorer:
+    name: str
+    def score(self, source: str, summary: str) -> float: ...
+```
+
+| scorer | approach |
+|---|---|
+| `random` | uniform noise; floor for every metric |
+| `rouge-l` | ROUGE-Lsum recall of the summary *against the source* — fraction of the summary supported lexically (note: not summary-vs-reference ROUGE, which measures relevance) |
+| `bertscore` | BERTScore precision of summary vs source (roberta-large embeddings) |
+| `nli-deberta` | SummaC-style zero-shot NLI (DeBERTa-v3 MNLI): min over summary sentences of max entailment over overlapping 2-sentence source chunks |
+| `llm-judge` | Qwen2.5-7B-Instruct verifies each summary sentence against the article; score = mean P("yes") read from first-token logits |
+
+## Reproducing
+
+```bash
+pip install -r requirements.txt
+python run.py            # full benchmark -> table on stdout + results.json
+python plot.py           # results.json -> results.png + markdown table
+```
+
+`python run.py` downloads the dataset on first use and runs every scorer in
+`SCORERS` (model weights fetched from Hugging Face on first use; the two
+model scorers want a CUDA GPU — a 7B judge in bf16 needs ~16 GB VRAM).
+Useful during development:
+
+```bash
+python run.py --only random,rouge-l      # subset of scorers
+python run.py --limit 200                # seeded random subsample of pairs
+python smoke_test.py                     # model-free tests of scorer logic
+```
+
+The table is rewritten and `results.json` re-dumped after every scorer, so a
+crash in scorer N never loses scorers 1..N-1.
+
+Adding a scorer = implement the interface, append the class to `SCORERS` in
+`run.py`. Nothing else changes.
