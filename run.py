@@ -109,7 +109,7 @@ def main():
                         help="where to dump raw per-scorer results")
     args = parser.parse_args()
 
-    examples = data.load_toy()
+    examples = data.load_summeval()
     if args.limit:
         examples = examples[: args.limit]
     print(f"{len(examples)} (source, summary) pairs\n")
