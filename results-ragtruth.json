@@ -4,64 +4,64 @@
     "spearman": 0.08668288510617667,
     "balanced_acc": 0.5520199459093982,
     "roc_auc": 0.5577952445345955,
-    "median_latency_ms": 0.0002998858690261841,
-    "peak_vram_gb": 0.0,
-    "n": 900,
     "roc_auc_ci": [
-      0.514,
-      0.6015
-    ]
+      0.5142,
+      0.6012
+    ],
+    "median_latency_ms": 0.000200001522898674,
+    "peak_vram_gb": 0.0,
+    "n": 900
   },
   {
     "scorer": "rouge-l",
     "spearman": 0.22700371885841594,
     "balanced_acc": 0.638184584178499,
     "roc_auc": 0.6577959488393057,
-    "median_latency_ms": 7.9391999752260745,
-    "peak_vram_gb": 0.0,
-    "n": 900,
     "roc_auc_ci": [
-      0.6181,
-      0.6975
-    ]
+      0.6152,
+      0.6987
+    ],
+    "median_latency_ms": 7.413049985188991,
+    "peak_vram_gb": 0.0,
+    "n": 900
   },
   {
     "scorer": "bertscore",
     "spearman": 0.20179312531733798,
     "balanced_acc": 0.6323529411764706,
     "roc_auc": 0.6400122549019608,
-    "median_latency_ms": 48.2064500101842,
-    "peak_vram_gb": 1.125000704,
-    "n": 900,
     "roc_auc_ci": [
-      0.5994,
-      0.6806
-    ]
+      0.5982,
+      0.6823
+    ],
+    "median_latency_ms": 44.63745001703501,
+    "peak_vram_gb": 1.125000704,
+    "n": 900
   },
   {
     "scorer": "nli-deberta",
     "spearman": 0.2267383968072155,
     "balanced_acc": 0.6189570655848546,
     "roc_auc": 0.6551125478927203,
-    "median_latency_ms": 403.2444000476971,
-    "peak_vram_gb": 0.843187712,
-    "n": 900,
     "roc_auc_ci": [
-      0.6153,
-      0.6949
-    ]
+      0.613,
+      0.6974
+    ],
+    "median_latency_ms": 108.94335003104061,
+    "peak_vram_gb": 0.843584,
+    "n": 900
   },
   {
     "scorer": "llm-judge",
     "spearman": 0.31220622394939057,
     "balanced_acc": 0.6607082488167682,
     "roc_auc": 0.7162145030425964,
-    "median_latency_ms": 1853.6056500161067,
-    "peak_vram_gb": 6.807733248,
-    "n": 900,
     "roc_auc_ci": [
-      0.6799,
-      0.7525
-    ]
+      0.6796,
+      0.7507
+    ],
+    "median_latency_ms": 535.307849990204,
+    "peak_vram_gb": 6.81441792,
+    "n": 900
   }
 ]

@@ -1,0 +1,54 @@
+[
+  {
+    "scorer": "llm-judge-0.5b",
+    "spearman": 0.17713828723382843,
+    "balanced_acc": 0.5923343475321163,
+    "roc_auc": 0.6218728870858689,
+    "roc_auc_ci": [
+      0.5781,
+      0.6656
+    ],
+    "median_latency_ms": 214.9791499832645,
+    "peak_vram_gb": 1.485114368,
+    "n": 900
+  },
+  {
+    "scorer": "llm-judge-1.5b",
+    "spearman": 0.3189298718768758,
+    "balanced_acc": 0.6694979716024341,
+    "roc_auc": 0.7197853279242732,
+    "roc_auc_ci": [
+      0.6793,
+      0.7609
+    ],
+    "median_latency_ms": 309.3580999993719,
+    "peak_vram_gb": 3.60286208,
+    "n": 900
+  },
+  {
+    "scorer": "llm-judge-3b",
+    "spearman": 0.31220622394939057,
+    "balanced_acc": 0.6607082488167682,
+    "roc_auc": 0.7162145030425964,
+    "roc_auc_ci": [
+      0.6796,
+      0.7507
+    ],
+    "median_latency_ms": 541.0310000297613,
+    "peak_vram_gb": 6.81441792,
+    "n": 900
+  },
+  {
+    "scorer": "llm-judge-7b-4bit",
+    "spearman": 0.4315305488506186,
+    "balanced_acc": 0.738843813387424,
+    "roc_auc": 0.7858420667117423,
+    "roc_auc_ci": [
+      0.7498,
+      0.8214
+    ],
+    "median_latency_ms": 1174.0375999943353,
+    "peak_vram_gb": 6.676492288,
+    "n": 900
+  }
+]

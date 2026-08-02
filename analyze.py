@@ -60,7 +60,7 @@ def main():
                       else "solid — CIs do not overlap"),
         }
         print(f"\nFlip gate (NLI vs {judge_key}): "
-              f"{'OVERLAP → directional' if overlap else 'SEPARATED → solid'}")
+              f"{'OVERLAP -> directional' if overlap else 'SEPARATED -> solid'}")
 
     if "nli-deberta" in scorers and "llm-judge" in scorers:
         d = metrics.disagreement(

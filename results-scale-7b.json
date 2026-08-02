@@ -1,0 +1,15 @@
+[
+  {
+    "scorer": "llm-judge-7b-4bit",
+    "spearman": 0.4315305488506186,
+    "balanced_acc": 0.738843813387424,
+    "roc_auc": 0.7858420667117423,
+    "roc_auc_ci": [
+      0.7498,
+      0.8214
+    ],
+    "median_latency_ms": 1174.0375999943353,
+    "peak_vram_gb": 6.676492288,
+    "n": 900
+  }
+]

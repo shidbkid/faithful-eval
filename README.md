@@ -14,18 +14,25 @@ public models, and public tooling.
 
 ## Results
 
-**Answer:** it depends on the era of the hallucination — and that's the
-finding. On 2019-era summaries (SummEval), a ~1.5 GB NLI model beats a 3B LLM
-judge on every quality metric at ~9× less latency. On LLM-era summaries
-(RAGTruth), the ranking flips: NLI degrades sharply and the judge takes the
-lead. The cheap detector stops working as the hallucinations get more fluent.
+**Answer:** it depends on the era of the hallucination — and how big a judge
+you can afford.
+
+1. On **2019-era** SummEval, a ~1.5 GB NLI model beats a 3B LLM judge.
+2. On **LLM-era** RAGTruth, NLI collapses to ROUGE-L levels. A 3B judge leads
+   (directional — bootstrap CIs still overlap). A **7B-4bit** judge clears NLI
+   with **non-overlapping** CIs (0.750–0.821 vs 0.613–0.697).
+3. You do **not** need 3B to beat NLI on RAGTruth: **1.5B is the sweet spot**
+   on this card (AUC 0.720 > 3B’s 0.716, half the VRAM).
+4. NLI and the 3B judge fail on **different** examples (75% of errors are
+   unique to one scorer) — cascades are justified, though a naive
+   ROUGE→NLI→judge band cascade trades quality for speed.
 
 ![Same scorers, different era of hallucination](comparison.png)
 
-The judge leads and NLI clearly degrades, though their RAGTruth AUC confidence
-intervals overlap (NLI 0.615–0.695 vs judge 0.680–0.752) — the flip is
-**directional, not yet decisive**. CIs are Hanley–McNeil 95% approximations
-from (AUC, n_pos, n_neg); see `_add_auc_ci.py`.
+![How many GB of judge to beat NLI?](scale.png)
+
+Bootstrap AUC CIs from paired resampling of saved predictions
+(`run.py --save-preds` → `analyze.py`). All numbers: RTX 4000 Ada (~12 GB).
 
 ### SummEval — 2019-era system summaries (n=1600)
 
@@ -35,7 +42,7 @@ from (AUC, n_pos, n_neg); see `_add_auc_ci.py`.
 | rouge-l | 0.386 | 0.687 | 0.705 | 0.676–0.735 | 4.7 | 0.0 |
 | bertscore | 0.353 | 0.710 | 0.750 | 0.723–0.777 | 48.0 | 1.1 |
 | nli-deberta | 0.403 | 0.743 | 0.786 | 0.761–0.810 | 77.3 | 1.5 |
-| llm-judge | 0.379 | 0.704 | 0.771 | 0.745–0.796 | 719.2 | 6.6 |
+| llm-judge (3B) | 0.379 | 0.704 | 0.771 | 0.745–0.796 | 719.2 | 6.6 |
 
 ![quality vs cost (SummEval)](results.png)
 
@@ -43,26 +50,50 @@ from (AUC, n_pos, n_neg); see `_add_auc_ci.py`.
 
 | scorer | spearman | balanced acc | ROC-AUC | AUC 95% CI | median ms/doc | peak VRAM (GB) |
 |---|---|---|---|---|---|---|
-| random | 0.087 | 0.552 | 0.558 | 0.514–0.602 | 0.0 | 0.0 |
-| rouge-l | 0.227 | 0.638 | 0.658 | 0.618–0.698 | 7.9 | 0.0 |
-| bertscore | 0.202 | 0.632 | 0.640 | 0.599–0.681 | 48.2 | 1.1 |
-| nli-deberta | 0.227 | 0.619 | 0.655 | 0.615–0.695 | 403.2 | 0.8 |
-| llm-judge | 0.312 | 0.661 | 0.716 | 0.680–0.752 | 1853.6 | 6.8 |
+| random | 0.087 | 0.552 | 0.558 | 0.514–0.601 | 0.0 | 0.0 |
+| rouge-l | 0.227 | 0.638 | 0.658 | 0.615–0.699 | 7.4 | 0.0 |
+| bertscore | 0.202 | 0.632 | 0.640 | 0.598–0.682 | 44.6 | 1.1 |
+| nli-deberta | 0.227 | 0.619 | 0.655 | 0.613–0.697 | 108.9 | 0.8 |
+| llm-judge (3B) | 0.312 | 0.661 | 0.716 | 0.680–0.751 | 535.3 | 6.8 |
 
 ![quality vs cost (RAGTruth)](results-ragtruth.png)
 
-Both runs on a single RTX 4000 Ada (~12 GB); the judge auto-selected
-`Qwen/Qwen2.5-3B-Instruct`. Latencies comparable only within one machine.
+### Judge scaling curve (RAGTruth, n=900)
+
+| scorer | spearman | balanced acc | ROC-AUC | AUC 95% CI | median ms/doc | peak VRAM (GB) |
+|---|---|---|---|---|---|---|
+| llm-judge-0.5b | 0.177 | 0.592 | 0.622 | 0.578–0.666 | 215 | 1.5 |
+| llm-judge-1.5b | 0.319 | 0.669 | **0.720** | 0.679–0.761 | 309 | 3.6 |
+| llm-judge-3b | 0.312 | 0.661 | 0.716 | 0.680–0.751 | 541 | 6.8 |
+| llm-judge-7b-4bit | **0.432** | **0.739** | **0.786** | **0.750–0.821** | 1174 | 6.7 |
+
+0.5B loses to NLI. 1.5B is the first size whose point estimate clears NLI.
+7B-4bit is the first whose CI sits entirely above NLI’s — and it fits in the
+same ~7 GB envelope as the 3B via 4-bit quantization.
+
+### Failure complementarity + cascade (RAGTruth)
+
+At each scorer’s own oracle threshold, NLI vs 3B judge:
+
+| | count |
+|---|---:|
+| both correct | 344 |
+| both wrong | 138 |
+| only NLI wrong (judge saves) | 267 |
+| only judge wrong (NLI saves) | 151 |
+| complementarity among errors | **75%** |
+
+Naive cascade (keep ROUGE outside its middle tertile; else NLI; else judge):
+AUC 0.639 at mean **92 ms/doc** — 89% of 3B-judge AUC at 17% of its latency,
+but **does not beat NLI alone** on AUC. Cascades need better escalation
+policy; the disagreement table says the headroom is real.
 
 ### What this means
 
-If your summaries come from older, weaker models — or your hallucinations are
-of the clumsy kind (wrong entities, garbled repetition) — a small NLI model is
-the clear on-prem choice. If your summaries come from modern LLMs, whose
-fabrications are fluent and plausible, the shallow entailment check loses its
-edge and a local LLM judge becomes worth its ~4× VRAM and ~9× latency.
-BERTScore is dominated on both datasets, and ROUGE-L remains an embarrassingly
-strong floor for a CPU-only metric from 2004.
+Clumsy / older hallucinations → ship NLI. Fluent LLM hallucinations → you
+need a local judge; **1.5B is enough to lead**, **7B-4bit is enough to win
+decisively**, and both fit a 12 GB workstation card. BERTScore is dominated
+on both datasets; ROUGE-L remains a strong CPU floor.
 
 ## Benchmark
 
@@ -126,15 +157,17 @@ project-local `.venv` on Python 3.14+, set
 `NLTK_DISABLE_IMPORT_SECURITY=1` before running. Useful during development:
 
 ```bash
-python run.py --only random,rouge-l      # subset of scorers
-python run.py --limit 200                # seeded random subsample of pairs
-python run.py --dataset ragtruth         # LLM-era RAGTruth Summary (900 pairs)
-python run.py --dataset ragtruth --task all --limit 200
-python smoke_test.py                     # model-free tests of scorer logic
+python run.py --only random,rouge-l
+python run.py --limit 200
+python run.py --dataset ragtruth --save-preds   # writes *.preds.json
+python analyze.py --preds results-ragtruth.preds.json
+python run.py --dataset ragtruth --judge-model 0.5b,1.5b,3b,7b-4bit \
+    --out results-scale.json --save-preds
+python plot.py                 # also builds comparison.png + scale.png
+python smoke_test.py
 ```
 
-The table is rewritten and `results.json` re-dumped after every scorer, so a
-crash in scorer N never loses scorers 1..N-1.
+`--judge-model 7b-4bit` needs `bitsandbytes` + `accelerate`. The table and
+JSON rewrite after every scorer, so a crash never loses finished rows.
 
-Adding a scorer = implement the interface, append the class to `SCORERS` in
-`run.py`. Nothing else changes.
+Adding a scorer = implement the interface, append to `SCORERS` in `run.py`.

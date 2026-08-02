@@ -8,3 +8,5 @@ transformers
 bert-score
 sentencepiece
 datasets
+accelerate
+bitsandbytes

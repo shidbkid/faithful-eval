@@ -1,8 +1,7 @@
 # TODO
 
-- Persist per-example `preds` in results JSON and replace Hanley–McNeil AUC CIs
-  with bootstrap CIs (decision gate softener until then).
-- Judge scaling curve: Qwen 0.5B / 1.5B / 3B / 7B-q vs NLI horizontal line.
-- Cascade: ROUGE → NLI → judge on uncertain cases.
-- Failure complementarity once preds are saved.
-- Third dataset only after the Medium post is up.
+- Tune cascade escalation (current tertile bands lose to NLI on AUC).
+- Second LLM-era dataset (TofuEval / FactCheck-GPT) once HF gate is accepted.
+- RAGTruth QA / Data2txt confirmation slices.
+- Medium post + README cross-link.
+- Paper decision after the post is up.
