@@ -1,12 +1,15 @@
-"""Quality-vs-cost scatter from results.json.
+"""Quality-vs-cost scatter from a results JSON.
 
-    python plot.py            # writes results.png, prints a markdown table
+    python plot.py                              # results.json -> results.png
+    python plot.py --in results-ragtruth.json --out results-ragtruth.png \
+                   --title "Faithfulness scoring: quality vs cost (RAGTruth Summary)"
 
 X = median latency per (source, summary) pair (log scale), Y = Spearman
-correlation with human consistency. Each point is one scorer; VRAM is
-noted in the point label when the scorer used a GPU.
+correlation with human labels. Each point is one scorer; VRAM is noted in
+the point label when the scorer used a GPU.
 """
 
+import argparse
 import json
 
 import matplotlib
@@ -27,7 +30,17 @@ def label(r):
 
 
 def main():
-    rows = json.load(open("results.json"))
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--in", dest="infile", default="results.json",
+                        help="results JSON from run.py")
+    parser.add_argument("--out", default="results.png",
+                        help="output plot path")
+    parser.add_argument("--title",
+                        default="Faithfulness scoring: quality vs cost",
+                        help="plot title")
+    args = parser.parse_args()
+
+    rows = json.load(open(args.infile))
 
     fig, ax = plt.subplots(figsize=(7, 4.5), dpi=200)
     fig.patch.set_facecolor(SURFACE)
@@ -43,9 +56,8 @@ def main():
     ax.set_xscale("log")
     ax.set_xlabel("median latency per document pair (ms, log scale)",
                   color=INK_2, fontsize=9)
-    ax.set_ylabel("Spearman vs human consistency", color=INK_2, fontsize=9)
-    ax.set_title("Faithfulness scoring: quality vs cost (SummEval, n=1600)",
-                 color=INK, fontsize=11, loc="left")
+    ax.set_ylabel("Spearman vs human label", color=INK_2, fontsize=9)
+    ax.set_title(args.title, color=INK, fontsize=11, loc="left")
     ax.grid(True, color=GRID, linewidth=0.8, zorder=0)
     for spine in ax.spines.values():
         spine.set_visible(False)
@@ -53,8 +65,8 @@ def main():
     ax.margins(x=0.15, y=0.15)
 
     fig.tight_layout()
-    fig.savefig("results.png", facecolor=SURFACE)
-    print("wrote results.png\n")
+    fig.savefig(args.out, facecolor=SURFACE)
+    print(f"wrote {args.out}\n")
 
     def f(v, spec=".3f"):
         return "n/a" if v is None else format(v, spec)

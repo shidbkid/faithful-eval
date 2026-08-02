@@ -14,14 +14,20 @@ public models, and public tooling.
 
 ## Results
 
-**Answer:** among scorers that run entirely on local hardware, a DeBERTa NLI
-entailment check (`nli-deberta`) is the best quality/cost trade-off. It beats
-a 3B LLM judge on Spearman, balanced accuracy, and ROC-AUC while using ~4×
-less VRAM and ~9× less latency. BERTScore is not worth its cost here — it
-loses to cheap ROUGE-L on Spearman.
+**Answer:** it depends which era of hallucination you measure.
 
-Full SummEval run (n=1600) on a local NVIDIA RTX 4000 Ada (~12 GB). The LLM
-judge auto-selected `Qwen/Qwen2.5-3B-Instruct`.
+- On **2019-era** SummEval errors, DeBERTa NLI is the best local quality/cost
+  trade-off — it beats a 3B LLM judge on Spearman / bal_acc / ROC-AUC at ~4×
+  less VRAM.
+- On **LLM-era** RAGTruth summaries (GPT-4 / GPT-3.5 / Llama-2 / Mistral), the
+  ranking **flips**: the 3B judge leads, and NLI falls to ROUGE-L levels on
+  ROC-AUC. Cheap detectors that win on SummEval stop working when
+  hallucinations get fluent.
+
+Both runs on a local NVIDIA RTX 4000 Ada (~12 GB); judge =
+`Qwen/Qwen2.5-3B-Instruct`. Latencies are only comparable within a run.
+
+### SummEval (n=1600)
 
 | scorer | spearman | balanced acc | ROC-AUC | median ms/doc | peak VRAM (GB) |
 |---|---|---|---|---|---|
@@ -31,28 +37,19 @@ judge auto-selected `Qwen/Qwen2.5-3B-Instruct`.
 | nli-deberta | 0.403 | 0.743 | 0.786 | 77.3 | 1.5 |
 | llm-judge | 0.379 | 0.704 | 0.771 | 719.2 | 6.6 |
 
-![quality vs cost](results.png)
+![quality vs cost (SummEval)](results.png)
 
-Latencies are only comparable within a single machine's run.
-
-### RAGTruth shakedown (LLM-era, n=200 Summary)
-
-Same scorers, same machine, on [RAGTruth](https://arxiv.org/abs/2401.00396)
-test Summary pairs (GPT-4 / GPT-3.5 / Llama-2 / Mistral responses with human
-hallucination spans). **The ranking flips:** the 3B LLM judge leads, and NLI
-drops behind even ROUGE-L on ROC-AUC.
+### RAGTruth Summary (n=900)
 
 | scorer | spearman | balanced acc | ROC-AUC | median ms/doc | peak VRAM (GB) |
 |---|---|---|---|---|---|
-| random | 0.119 | 0.625 | 0.580 | 0.0 | 0.0 |
-| rouge-l | 0.299 | 0.655 | 0.706 | 8.0 | 0.0 |
-| bertscore | 0.164 | 0.620 | 0.610 | 66.7 | 1.1 |
-| nli-deberta | 0.234 | 0.636 | 0.658 | 149.3 | 0.8 |
-| llm-judge | 0.321 | 0.660 | 0.716 | 769.4 | 6.8 |
+| random | 0.087 | 0.552 | 0.558 | 0.0 | 0.0 |
+| rouge-l | 0.227 | 0.638 | 0.658 | 7.9 | 0.0 |
+| bertscore | 0.202 | 0.632 | 0.640 | 48.2 | 1.1 |
+| nli-deberta | 0.227 | 0.619 | 0.655 | 403.2 | 0.8 |
+| llm-judge | 0.312 | 0.661 | 0.716 | 1853.6 | 6.8 |
 
-Preliminary — full RAGTruth Summary run is `python run.py --dataset ragtruth`
-(900 pairs). If it holds, the claim becomes: *cheap NLI detectors that win on
-2019-era SummEval stop working when hallucinations get fluent.*
+![quality vs cost (RAGTruth)](results-ragtruth.png)
 
 ## Benchmark
 
