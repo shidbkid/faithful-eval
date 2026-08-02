@@ -2,3 +2,5 @@ results.json
 __pycache__/
 .cache/
 data/
+.venv/
+*.pt
