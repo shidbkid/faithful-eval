@@ -12,11 +12,16 @@ import statistics
 import time
 
 import data
-from scorers import RandomScorer, RougeLScorer
+from scorers import (BERTScoreScorer, NLIScorer,
+                     RandomScorer, RougeLScorer)
 
+# Zero-arg constructors; instantiated one at a time in main() so a heavy
+# model is only loaded while its scorer is running.
 SCORERS = [
-    RandomScorer(),
-    RougeLScorer(),
+    RandomScorer,
+    RougeLScorer,
+    BERTScoreScorer,
+    NLIScorer,
 ]
 
 
@@ -105,26 +110,36 @@ def print_table(rows):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--limit", type=int, default=None,
-                        help="cap the number of (source, summary) pairs")
+                        help="random (seeded) subsample of pairs, for quick runs")
+    parser.add_argument("--only", default=None,
+                        help="comma-separated scorer names to run, e.g. "
+                             "--only random,rouge-l")
     parser.add_argument("--out", default="results.json",
                         help="where to dump raw per-scorer results")
     args = parser.parse_args()
 
     examples = data.load_summeval()
-    if args.limit:
-        examples = examples[: args.limit]
+    if args.limit and args.limit < len(examples):
+        import random as _random
+        examples = _random.Random(0).sample(examples, args.limit)
     print(f"{len(examples)} (source, summary) pairs\n")
 
+    only = set(args.only.split(",")) if args.only else None
     rows = []
-    for scorer in SCORERS:
+    for cls in SCORERS:
+        if only is not None and cls.name not in only:
+            continue
+        scorer = cls()
         rows.append(evaluate(scorer, examples))
+        # Reprint the table and rewrite results after every scorer, so a
+        # crash in scorer N doesn't lose scorers 1..N-1.
+        print_table(rows)
+        print()
+        with open(args.out, "w") as f:
+            json.dump([{k: v for k, v in r.items() if k != "preds"}
+                       for r in rows], f, indent=2)
 
-    print_table(rows)
-
-    with open(args.out, "w") as f:
-        json.dump([{k: v for k, v in r.items() if k != "preds"} for r in rows],
-                  f, indent=2)
-    print(f"\nwrote {args.out}")
+    print(f"wrote {args.out}")
 
 
 if __name__ == "__main__":
