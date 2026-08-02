@@ -14,24 +14,23 @@ public models, and public tooling.
 
 ## Results
 
-**Status: partial.** The CPU scorers below were run on the full benchmark
-(1600 pairs). The model-based scorers (`bertscore`, `nli-deberta`,
-`llm-judge`) are implemented and smoke-tested but their numbers are pending
-a GPU run; this table and the plot regenerate automatically once that run
-completes (see *Reproducing*).
+Full SummEval run (n=1600) on a local NVIDIA RTX 4000 Ada (~12 GB). The LLM
+judge auto-selected `Qwen/Qwen2.5-3B-Instruct`.
 
 | scorer | spearman | balanced acc | ROC-AUC | median ms/doc | peak VRAM (GB) |
 |---|---|---|---|---|---|
-| random | 0.013 | 0.516 | 0.506 | 0.0 | n/a |
-| rouge-l | 0.386 | 0.687 | 0.705 | 7.7 | n/a |
-| bertscore | *pending* | *pending* | *pending* | *pending* | *pending* |
-| nli-deberta | *pending* | *pending* | *pending* | *pending* | *pending* |
-| llm-judge | *pending* | *pending* | *pending* | *pending* | *pending* |
+| random | 0.013 | 0.516 | 0.506 | 0.0 | 0.0 |
+| rouge-l | 0.386 | 0.687 | 0.705 | 4.7 | 0.0 |
+| bertscore | 0.353 | 0.710 | 0.750 | 48.0 | 1.1 |
+| nli-deberta | 0.403 | 0.743 | 0.786 | 77.3 | 1.5 |
+| llm-judge | 0.379 | 0.704 | 0.771 | 719.2 | 6.6 |
 
 ![quality vs cost](results.png)
 
-CPU-only numbers above were measured on a cloud VM (no GPU); latency columns
-are only comparable within a single machine's run.
+NLI wins on Spearman, balanced accuracy, and ROC-AUC while using ~4× less
+VRAM and ~9× less latency than the local LLM judge. BERTScore underperforms
+ROUGE-L on Spearman despite higher AUC cost. Latencies are only comparable
+within a single machine's run.
 
 ## Benchmark
 
