@@ -152,3 +152,60 @@ class NLIScorer(Scorer):
         for j in range(len(claims)):
             per_claim.append(max(probs[j * n:(j + 1) * n]))
         return min(per_claim)
+
+
+class LLMJudgeScorer(Scorer):
+    """Local LLM judge: claim-level verification with a small instruct model.
+
+    Splits the summary into sentences (claims). For each claim, asks the
+    model whether the article fully supports it, and reads the probability
+    of the "yes" token from the first-token logits (no sampling, no
+    parsing). Score = mean P(yes) across claims -- graded, monotone, and
+    robust to the model refusing to emit clean JSON.
+    """
+
+    name = "llm-judge"
+
+    PROMPT = (
+        "You are verifying a summary claim against a news article.\n\n"
+        "ARTICLE:\n{source}\n\n"
+        "CLAIM:\n{claim}\n\n"
+        "Is the claim fully supported by the article, with no invented or "
+        "contradicted details? Answer with exactly one word, yes or no."
+    )
+
+    def __init__(self,
+                 model_name: str = "Qwen/Qwen2.5-7B-Instruct",
+                 device: str = None,
+                 max_source_chars: int = 6000):
+        import torch
+        from transformers import AutoModelForCausalLM, AutoTokenizer
+        self.device = device or ("cuda" if torch.cuda.is_available() else "cpu")
+        self.max_source_chars = max_source_chars
+        self.tokenizer = AutoTokenizer.from_pretrained(model_name)
+        self.model = AutoModelForCausalLM.from_pretrained(
+            model_name,
+            dtype=torch.bfloat16 if self.device == "cuda" else torch.float32,
+        ).to(self.device).eval()
+        self.yes_id = self.tokenizer.encode("yes",
+                                            add_special_tokens=False)[0]
+        self.no_id = self.tokenizer.encode("no", add_special_tokens=False)[0]
+
+    def _p_yes(self, source: str, claim: str) -> float:
+        import torch
+        messages = [{"role": "user",
+                     "content": self.PROMPT.format(
+                         source=source[: self.max_source_chars],
+                         claim=claim)}]
+        ids = self.tokenizer.apply_chat_template(
+            messages, add_generation_prompt=True,
+            return_tensors="pt").to(self.device)
+        with torch.no_grad():
+            logits = self.model(ids).logits[0, -1]
+        two = torch.softmax(
+            torch.stack([logits[self.yes_id], logits[self.no_id]]), dim=0)
+        return two[0].item()
+
+    def score(self, source: str, summary: str) -> float:
+        claims = _sent_split(summary) or [summary]
+        return sum(self._p_yes(source, c) for c in claims) / len(claims)

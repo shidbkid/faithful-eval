@@ -12,7 +12,7 @@ import statistics
 import time
 
 import data
-from scorers import (BERTScoreScorer, NLIScorer,
+from scorers import (BERTScoreScorer, LLMJudgeScorer, NLIScorer,
                      RandomScorer, RougeLScorer)
 
 # Zero-arg constructors; instantiated one at a time in main() so a heavy
@@ -22,6 +22,7 @@ SCORERS = [
     RougeLScorer,
     BERTScoreScorer,
     NLIScorer,
+    LLMJudgeScorer,
 ]
 
 
