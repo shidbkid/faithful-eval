@@ -120,6 +120,28 @@ At each scorer’s own oracle threshold, NLI vs 3B judge on Summary:
 QA / Data2txt complementarity: 69% / 73%. Naive Summary cascade (ROUGE→NLI→judge
 tertile bands): AUC 0.639 at 92 ms/doc — fast, but does not beat NLI alone.
 
+### Detectability vs generator strength (`by_generator.py`)
+
+Zero-GPU follow-up: slice RAGTruth preds by generating model
+(llama-2-7b → … → GPT-4). Hypothesis: **detector AUC falls as generators
+get stronger.**
+
+**Verdict: not a clean arms-race curve.** Caveat first — GPT-3.5/4 Summary
+and QA slices have ≤6 unfaithful labels each, so those AUCs are unstable.
+On class-balanced open-model slices:
+
+| task | NLI vs gen strength | 3B judge | 7B-4bit |
+|---|---|---|---|
+| Summary | flat | **rises** | flat |
+| QA | mild fall | falls | mild fall |
+| Data2txt | falls (incl. GPT) | mild fall | — |
+
+So the era flip (2019 → LLM) does **not** simply continue as a monotonic
+within-era decay for every detector. Stronger generators do get cleaner
+faithful-rates; cheap detectors don’t systematically die across the open
+Llama/Mistral ladder the way the headline hoped. The ambitious claim needs
+a different design (more hard negatives per generator, or Path 2’s router).
+
 ### Task-aware cascade (`cascade.py`)
 
 Complementarity says a cascade should help; the naive one didn't. Next question:
