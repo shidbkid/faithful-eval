@@ -16,16 +16,19 @@ public models, and public tooling.
 
 **Answer:** it depends on the *era* and the *task* — and that's the finding.
 
-1. **Era.** On 2019-era SummEval, NLI beats a 3B judge. On LLM-era RAGTruth
-   **Summary**, NLI collapses; a 7B-4bit judge clears it with non-overlapping
-   CIs. **1.5B is the sweet spot** on Summary (AUC 0.720 ≥ 3B).
+1. **Era (two LLM-era datasets).** On 2019-era SummEval, NLI beats a 3B judge.
+   On LLM-era **RAGTruth Summary**, NLI collapses; **7B-4bit** clears it with
+   non-overlapping CIs. On LLM-era **TofuEval** (dialogue summaries), a **3B**
+   judge already clears NLI solidly (0.763–0.821 vs 0.675–0.732) — the flip
+   replicates off RAGTruth.
 2. **Task.** The flip is **not universal** across RAGTruth:
    - **Summary** — judge wins (3B directional, 7B-4bit solid vs NLI)
    - **Data2txt** — judge wins **solidly** (3B CI 0.706–0.771 vs NLI 0.556–0.633)
    - **QA** — ranking reverses again: **ROUGE-L wins** (0.729); even 7B-4bit
      (0.669) fails to beat cheap lexical/NLI baselines
-3. **Complementarity** stays high (~70–75%) wherever judge and NLI disagree —
-   cascades are justified, but policy must be task-aware.
+3. **Cascade.** Complementarity is high (~70–75%), but NLI is a weak cheap gate
+   on LLM-era text. Task-route QA→ROUGE; on Summary use **1.5B→7B** (95% of
+   7B AUC @ 51% latency), not NLI→judge.
 
 ![Same scorers, different era of hallucination](comparison.png)
 
@@ -85,6 +88,23 @@ AUC 95% CIs (bootstrap): Summary NLI 0.613–0.697 vs 7B 0.750–0.821
 (separated); Data2txt NLI 0.556–0.633 vs 3B 0.706–0.771 (separated); QA
 ROUGE 0.691–0.765 vs 3B judge 0.582–0.668 (judge below).
 
+### TofuEval — LLM-era dialogue summaries (n=1498)
+
+Second modern dataset (MeetB + MediaS via gated `lytang/LLM-AggreFact`).
+Needs `hf auth login` once.
+
+| scorer | spearman | balanced acc | ROC-AUC | AUC 95% CI | median ms/doc | peak VRAM (GB) |
+|---|---|---|---|---|---|---|
+| random | -0.014 | 0.504 | 0.490 | 0.454–0.525 | 0.0 | 0.0 |
+| rouge-l | 0.319 | 0.679 | 0.724 | 0.692–0.760 | 5.8 | 0.0 |
+| bertscore | 0.280 | 0.674 | 0.697 | 0.666–0.730 | 46.3 | 1.1 |
+| nli-deberta | 0.290 | 0.672 | 0.704 | 0.675–0.732 | 56.5 | 0.9 |
+| llm-judge (3B) | **0.416** | **0.717** | **0.792** | **0.763–0.821** | 207 | 6.8 |
+
+Flip gate NLI vs 3B: **solid** (CIs do not overlap). NLI fails to beat ROUGE
+here too — same “cheap detectors stall on fluent LLM text” pattern as RAGTruth
+Summary, and this time 3B is enough without a 7B.
+
 ### Failure complementarity + cascade (Summary)
 
 At each scorer’s own oracle threshold, NLI vs 3B judge on Summary:
@@ -99,24 +119,50 @@ At each scorer’s own oracle threshold, NLI vs 3B judge on Summary:
 
 QA / Data2txt complementarity: 69% / 73%. Naive Summary cascade (ROUGE→NLI→judge
 tertile bands): AUC 0.639 at 92 ms/doc — fast, but does not beat NLI alone.
-Escalation policy must be task-aware (on QA, escalate *away* from the judge).
+
+### Task-aware cascade (`cascade.py`)
+
+Complementarity says a cascade should help; the naive one didn't. Next question:
+route by **task**, escalate by **confidence**, report one cascade row per task.
+
+| task | policy | ROC-AUC | mean ms | vs target |
+|---|---|---|---:|---|
+| QA | ROUGE-L only | **0.729** | 4 | = best (judge loses here) |
+| Summary | NLI → mid-band 7B-4bit | 0.645 | 471 | 82% of 7B AUC @ 40% latency |
+| Data2txt | NLI → mid-band 3B | 0.574 | 950 | 78% of 3B AUC @ 79% latency |
+
+**Task routing works; NLI-gated escalation does not.** On Summary/Data2txt the
+NLI confidence band is the wrong cheap gate (skewed near zero on LLM-era text) —
+you keep ~⅔ of docs on NLI and the cascade underperforms the full judge.
+
+The cascade that *does* approach 7B quality is judge→judge on Summary:
+
+| policy | ROC-AUC | mean ms | vs 7B-4bit |
+|---|---|---:|---|
+| **1.5B → mid-band 7B-4bit** | **0.748** | **597** | **95% AUC @ 51% latency** |
+| NLI → 7B @ wide q[0.1,0.9] | 0.747 | 961 | 95% AUC but 82% latency (barely a cascade) |
+
+Ceiling is high; the cheap gate has to be a smaller judge, not NLI.
 
 ### What this means
 
 - Clumsy / older hallucinations → ship **NLI**.
-- Fluent LLM **summaries** and **data-to-text** → a local judge pays off;
-  **1.5B leads on Summary**, **7B-4bit decides**, both fit a 12 GB card.
+- Fluent LLM **summaries** (RAGTruth + TofuEval) and **data-to-text** → a
+  local judge pays off; on TofuEval **3B is already solid**, on RAGTruth
+  Summary **1.5B leads / 7B-4bit decides**. Want most of 7B quality cheaper
+  → **1.5B→7B cascade**, not NLI→judge.
 - Fluent LLM **QA** → don't bother with a judge; **ROUGE-L** is best here.
 - One scorer never wins everywhere — measure the task, then pick.
 
 ## Benchmark
 
-Two datasets, same scorer interface. Pick with `--dataset`:
+Three datasets, same scorer interface. Pick with `--dataset`:
 
 | flag | what it is | label |
 |---|---|---|
 | `--dataset summeval` (default) | [SummEval](https://github.com/Yale-LILY/SummEval) — 100 CNN/DM articles × 16 **2019-era** system summaries, 3 expert consistency ratings | continuous 1–5; binary = consistency == 5.0 |
 | `--dataset ragtruth` | [RAGTruth](https://arxiv.org/abs/2401.00396) (via `wandb/RAGTruth-processed`) — responses from GPT-4 / GPT-3.5 / Llama-2 / Mistral with human hallucination spans | soft label from span count; binary = zero spans |
+| `--dataset tofueval` | [TofuEval](https://arxiv.org/abs/2402.13249) via gated [`lytang/LLM-AggreFact`](https://huggingface.co/datasets/lytang/LLM-AggreFact) — MeetB + MediaS dialogue summary claims | binary human label (1 = faithful) |
 
 RAGTruth defaults to the **Summary** task (900 test pairs) so the comparison
 stays summary-faithfulness; pass `--task all` for QA + Data2txt too. SummEval
@@ -177,9 +223,14 @@ python run.py --dataset ragtruth --save-preds   # writes *.preds.json
 python analyze.py --preds results-ragtruth.preds.json
 python run.py --dataset ragtruth --judge-model 0.5b,1.5b,3b,7b-4bit \
     --out results-scale.json --save-preds
+python cascade.py              # task-aware cascade from saved preds
+python run.py --dataset tofueval --out results-tofueval.json --save-preds
 python plot.py                 # also builds comparison.png + scale.png
 python smoke_test.py
 ```
+
+TofuEval / LLM-AggreFact is gated: request access on the Hub, then
+`hf auth login` before the first `--dataset tofueval` run.
 
 `--judge-model 7b-4bit` needs `bitsandbytes` + `accelerate`. The table and
 JSON rewrite after every scorer, so a crash never loses finished rows.

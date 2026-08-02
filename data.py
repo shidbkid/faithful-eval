@@ -13,6 +13,9 @@ summeval  — 2019-era system summaries with 1–5 expert consistency
             (Fabbri et al.; fetched via BARTScore's vendored pickle).
 ragtruth  — LLM-era RAG / summary / QA responses with human hallucination
             spans (Niu et al. 2024; Hugging Face `wandb/RAGTruth-processed`).
+tofueval  — LLM-era topic-focused dialogue summaries (Tang et al. 2024),
+            via gated Hugging Face `lytang/LLM-AggreFact`
+            (subsets TofuEval-MeetB + TofuEval-MediaS). Requires `hf auth login`.
 """
 
 import os
@@ -25,7 +28,9 @@ SUMMEVAL_URL = ("https://raw.githubusercontent.com/neulab/BARTScore/main/"
                 "SUM/SummEval/data.pkl")
 SUMMEVAL_CACHE = os.path.join(DATA_DIR, "summeval.pkl")
 
-DATASETS = ("summeval", "ragtruth")
+DATASETS = ("summeval", "ragtruth", "tofueval")
+
+TOFUEVAL_SUBSETS = ("TofuEval-MeetB", "TofuEval-MediaS")
 
 
 def load_summeval():
@@ -96,11 +101,54 @@ def load_ragtruth(split: str = "test", task: str | None = "Summary"):
     return examples
 
 
+def load_tofueval(split: str = "test", subset: str | None = None):
+    """Load TofuEval from LLM-AggreFact (gated; needs HF login).
+
+    Parameters
+    ----------
+    split : "test" | "dev"
+    subset : "MeetB" | "MediaS" | "TofuEval-MeetB" | "TofuEval-MediaS" | None
+        None = both TofuEval subsets (~1498 test pairs).
+    """
+    from datasets import load_dataset
+
+    if subset is None:
+        keep = set(TOFUEVAL_SUBSETS)
+    else:
+        key = subset if subset.startswith("TofuEval-") else f"TofuEval-{subset}"
+        if key not in TOFUEVAL_SUBSETS:
+            raise ValueError(
+                f"unknown TofuEval subset {subset!r}; "
+                f"choose from MeetB, MediaS, or None for both")
+        keep = {key}
+
+    ds = load_dataset("lytang/LLM-AggreFact", split=split)
+    examples = []
+    for i, row in enumerate(ds):
+        if row["dataset"] not in keep:
+            continue
+        binary = int(row["label"])  # 1 = faithful, 0 = unsupported
+        examples.append({
+            "doc_id": f"{row['dataset']}:{i}",
+            "system": row["dataset"],
+            "source": row["doc"],
+            "summary": row["claim"],
+            "label": float(binary),
+            "binary": binary,
+        })
+    if not examples:
+        raise ValueError(
+            f"no TofuEval examples for split={split!r} subset={subset!r}")
+    return examples
+
+
 def load(name: str, **kwargs):
     if name == "summeval":
         return load_summeval()
     if name == "ragtruth":
         return load_ragtruth(**kwargs)
+    if name == "tofueval":
+        return load_tofueval(**kwargs)
     raise ValueError(
         f"unknown dataset {name!r}; choose from {DATASETS}")
 
@@ -109,6 +157,8 @@ if __name__ == "__main__":
     for name in DATASETS:
         if name == "ragtruth":
             ex = load(name, task="Summary")
+        elif name == "tofueval":
+            ex = load(name)
         else:
             ex = load(name)
         n_pos = sum(e["binary"] for e in ex)

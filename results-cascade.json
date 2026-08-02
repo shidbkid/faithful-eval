@@ -1,0 +1,188 @@
+{
+  "primary": [
+    {
+      "task": "Summary",
+      "policy": "NLI -> mid-band 7B-4bit (soft-keep)",
+      "n": 900,
+      "roc_auc": 0.6447909623619563,
+      "roc_auc_ci": [
+        0.6022158950435962,
+        0.685522486415926
+      ],
+      "balanced_acc": 0.6127028397565923,
+      "mean_latency_ms": 471.0753950185608,
+      "stage_frac": {
+        "llm-judge-7b-4bit": 0.34,
+        "nli-deberta": 0.66
+      },
+      "band": [
+        0.01042694091796875,
+        0.06864074707031254
+      ],
+      "target": "llm-judge-7b-4bit",
+      "auc_ratio_vs_target": 0.8205096032336413,
+      "latency_ratio_vs_target": 0.4012438741492042,
+      "refs": {
+        "rouge-l": {
+          "roc_auc": 0.6577959488393057,
+          "median_latency_ms": 7.413049985188991
+        },
+        "nli-deberta": {
+          "roc_auc": 0.6551125478927203,
+          "median_latency_ms": 108.94335003104061
+        },
+        "llm-judge": {
+          "roc_auc": 0.7162145030425964,
+          "median_latency_ms": 535.307849990204
+        },
+        "llm-judge-7b-4bit": {
+          "roc_auc": 0.7858420667117423,
+          "median_latency_ms": 1174.0375999943353
+        }
+      }
+    },
+    {
+      "task": "QA",
+      "policy": "ROUGE-L only",
+      "n": 900,
+      "roc_auc": 0.7293243243243243,
+      "roc_auc_ci": [
+        0.6910013077375264,
+        0.7653539233499544
+      ],
+      "balanced_acc": 0.6983108108108108,
+      "mean_latency_ms": 4.468250030186027,
+      "stage_frac": {
+        "rouge-l": 1.0
+      },
+      "band": null,
+      "target": "rouge-l",
+      "auc_ratio_vs_target": 1.0,
+      "latency_ratio_vs_target": 1.0,
+      "refs": {
+        "rouge-l": {
+          "roc_auc": 0.7293243243243243,
+          "median_latency_ms": 4.468250030186027
+        },
+        "nli-deberta": {
+          "roc_auc": 0.6889907094594594,
+          "median_latency_ms": 59.12300001364201
+        },
+        "llm-judge": {
+          "roc_auc": 0.6259923986486486,
+          "median_latency_ms": 364.0914499992505
+        }
+      }
+    },
+    {
+      "task": "Data2txt",
+      "policy": "NLI -> mid-band 3B judge (soft-keep)",
+      "n": 900,
+      "roc_auc": 0.5740184763718734,
+      "roc_auc_ci": [
+        0.5355907062175956,
+        0.6119332493452486
+      ],
+      "balanced_acc": 0.5655335496263296,
+      "mean_latency_ms": 949.983319992898,
+      "stage_frac": {
+        "llm-judge": 0.34,
+        "nli-deberta": 0.66
+      },
+      "band": [
+        0.008616256713867189,
+        0.024418945312500002
+      ],
+      "target": "llm-judge",
+      "auc_ratio_vs_target": 0.7778818811520234,
+      "latency_ratio_vs_target": 0.789118184871875,
+      "refs": {
+        "rouge-l": {
+          "roc_auc": 0.6095185059641987,
+          "median_latency_ms": 9.15855000494048
+        },
+        "nli-deberta": {
+          "roc_auc": 0.5940148176843736,
+          "median_latency_ms": 819.2013000370935
+        },
+        "llm-judge": {
+          "roc_auc": 0.7379249861454114,
+          "median_latency_ms": 1203.854299907107
+        }
+      }
+    }
+  ],
+  "ablations": [
+    {
+      "task": "Summary",
+      "policy": "1.5B -> mid-band 7B-4bit (soft-keep)",
+      "n": 900,
+      "roc_auc": 0.7484892663962135,
+      "roc_auc_ci": [
+        0.706882308036163,
+        0.787104669240589
+      ],
+      "balanced_acc": 0.7072346179851251,
+      "mean_latency_ms": 596.6238449976986,
+      "stage_frac": {
+        "llm-judge-7b-4bit": 0.3322222222222222,
+        "llm-judge-1.5b": 0.6677777777777778
+      },
+      "band": [
+        0.9720052083333334,
+        0.9967447916666666
+      ],
+      "target": "llm-judge-7b-4bit",
+      "auc_ratio_vs_target": 0.9524678025041,
+      "latency_ratio_vs_target": 0.5081812073144653,
+      "refs": {
+        "llm-judge-1.5b": {
+          "roc_auc": 0.7197853279242732,
+          "median_latency_ms": 309.3580999993719
+        },
+        "llm-judge-7b-4bit": {
+          "roc_auc": 0.7858420667117423,
+          "median_latency_ms": 1174.0375999943353
+        },
+        "nli-deberta": {
+          "roc_auc": 0.6551125478927203,
+          "median_latency_ms": 108.94335003104061
+        }
+      }
+    },
+    {
+      "task": "Summary",
+      "policy": "NLI -> mid-band 7B-4bit @ q[0.1,0.9]",
+      "n": 900,
+      "roc_auc": 0.7467320261437909,
+      "roc_auc_ci": [
+        0.7070468308166039,
+        0.7864339960362379
+      ],
+      "balanced_acc": 0.7213488843813387,
+      "mean_latency_ms": 961.0187500016764,
+      "stage_frac": {
+        "llm-judge-7b-4bit": 0.8,
+        "nli-deberta": 0.2
+      },
+      "band": [
+        0.0033565521240234374,
+        0.8383789062500002
+      ],
+      "target": "llm-judge-7b-4bit",
+      "auc_ratio_vs_target": 0.9502316785717485,
+      "latency_ratio_vs_target": 0.8185587497421831,
+      "refs": {
+        "nli-deberta": {
+          "roc_auc": 0.6551125478927203,
+          "median_latency_ms": 108.94335003104061
+        },
+        "llm-judge-7b-4bit": {
+          "roc_auc": 0.7858420667117423,
+          "median_latency_ms": 1174.0375999943353
+        }
+      }
+    }
+  ],
+  "takeaway": "Task routing is the win (QA\u2192ROUGE). NLI-gated escalation on Summary/Data2txt does not approach full-judge AUC at tertiary bands \u2014 NLI confidence is poorly structured on LLM-era data. On Summary, a 1.5B\u21927B judge cascade recovers ~95% of 7B AUC at roughly half the latency."
+}

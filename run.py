@@ -167,8 +167,9 @@ def main():
                         choices=list(data.DATASETS),
                         help="benchmark to evaluate (default: summeval)")
     parser.add_argument("--task", default="Summary",
-                        help="RAGTruth task filter: Summary|QA|Data2txt|all "
-                             "(default: Summary; ignored for summeval)")
+                        help="RAGTruth: Summary|QA|Data2txt|all. "
+                             "TofuEval: MeetB|MediaS|all (default both). "
+                             "Ignored for summeval.")
     parser.add_argument("--limit", type=int, default=None,
                         help="random (seeded) subsample of pairs, for quick runs")
     parser.add_argument("--only", default=None,
@@ -186,6 +187,12 @@ def main():
     load_kwargs = {}
     if args.dataset == "ragtruth":
         load_kwargs["task"] = None if args.task == "all" else args.task
+    elif args.dataset == "tofueval":
+        # reuse --task: all/Summary-default -> both subsets
+        if args.task in ("all", "Summary"):
+            load_kwargs["subset"] = None
+        else:
+            load_kwargs["subset"] = args.task
     examples = data.load(args.dataset, **load_kwargs)
     if args.limit and args.limit < len(examples):
         import random as _random
