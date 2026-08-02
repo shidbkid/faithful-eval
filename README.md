@@ -14,6 +14,12 @@ public models, and public tooling.
 
 ## Results
 
+**Answer:** among scorers that run entirely on local hardware, a DeBERTa NLI
+entailment check (`nli-deberta`) is the best quality/cost trade-off. It beats
+a 3B LLM judge on Spearman, balanced accuracy, and ROC-AUC while using ~4×
+less VRAM and ~9× less latency. BERTScore is not worth its cost here — it
+loses to cheap ROUGE-L on Spearman.
+
 Full SummEval run (n=1600) on a local NVIDIA RTX 4000 Ada (~12 GB). The LLM
 judge auto-selected `Qwen/Qwen2.5-3B-Instruct`.
 
@@ -27,10 +33,7 @@ judge auto-selected `Qwen/Qwen2.5-3B-Instruct`.
 
 ![quality vs cost](results.png)
 
-NLI wins on Spearman, balanced accuracy, and ROC-AUC while using ~4× less
-VRAM and ~9× less latency than the local LLM judge. BERTScore underperforms
-ROUGE-L on Spearman despite higher AUC cost. Latencies are only comparable
-within a single machine's run.
+Latencies are only comparable within a single machine's run.
 
 ## Benchmark
 
@@ -46,7 +49,7 @@ pairs every summary with its source article; it is cached under `data/`.
 - **spearman** — rank correlation of scorer output with mean expert consistency (1600 pairs).
 - **balanced acc / ROC-AUC** — binary task: *faithful* iff consistency = 5.0 (81.6% of pairs; all three experts rated it perfectly consistent). Balanced accuracy is reported at the best threshold over the scorer's own outputs — an oracle threshold, applied identically to every scorer.
 - **median ms/doc** — median wall-clock per `score(source, summary)` call.
-- **peak VRAM** — `torch.cuda.max_memory_allocated`, reset before each scorer; `n/a` on CPU.
+- **peak VRAM** — `torch.cuda.max_memory_allocated`, reset before each scorer; `0.0` means CPU-only.
 
 ## Scorers
 
@@ -68,18 +71,25 @@ class Scorer:
 
 ## Reproducing
 
+Needs Python 3.10+ and a CUDA GPU for the model scorers. Install a CUDA build
+of PyTorch for your platform ([pytorch.org](https://pytorch.org)), then:
+
 ```bash
-pip install -r requirements.txt
+python -m venv .venv
+# Windows: .venv\Scripts\activate
+# Unix:    source .venv/bin/activate
+pip install -r requirements.txt          # or: pip install -r requirements.lock.txt
 python run.py            # full benchmark -> table on stdout + results.json
 python plot.py           # results.json -> results.png + markdown table
 ```
 
 `python run.py` downloads the dataset on first use and runs every scorer in
-`SCORERS` (model weights fetched from Hugging Face on first use; the two
-model scorers want a CUDA GPU). The NLI scorer needs ~2–4 GB of VRAM; the
-LLM judge picks the largest Qwen2.5 Instruct model that fits your card
-(7B needs ~16 GB, 3B ~7 GB, 1.5B ~4 GB — pass `model_name` to override).
-Useful during development:
+`SCORERS` (model weights fetched from Hugging Face on first use). The NLI
+scorer needs ~2–4 GB of VRAM; the LLM judge picks the largest Qwen2.5 Instruct
+model that fits your card (7B needs ~16 GB, 3B ~7 GB, 1.5B ~4 GB — pass
+`model_name` to override). If NLTK raises an import-security error with a
+project-local `.venv` on Python 3.14+, set
+`NLTK_DISABLE_IMPORT_SECURITY=1` before running. Useful during development:
 
 ```bash
 python run.py --only random,rouge-l      # subset of scorers
