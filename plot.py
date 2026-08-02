@@ -124,6 +124,37 @@ def table(rows, heading):
               f"| {fmt(r['peak_vram_gb'], '.1f')} |")
 
 
+def scale_curve(judge_rows, nli_auc, outfile):
+    """Judge quality vs VRAM, with NLI as a horizontal reference."""
+    fig, ax = new_axes(width=7, height=4.5)
+    xs, ys, labels = [], [], []
+    for r in judge_rows:
+        xs.append(max(r.get("peak_vram_gb") or 0.1, 0.1))
+        ys.append(r["roc_auc"])
+        labels.append(r["scorer"].replace("llm-judge-", ""))
+    ax.plot(xs, ys, color=color("llm-judge"), linewidth=2, zorder=3)
+    ax.scatter(xs, ys, s=70, color=color("llm-judge"), zorder=4)
+    for x, y, lab in zip(xs, ys, labels):
+        ax.annotate(lab, (x, y), xytext=(6, 5),
+                    textcoords="offset points", fontsize=9, color=INK)
+    if nli_auc is not None:
+        ax.axhline(nli_auc, color=color("nli-deberta"), linestyle="--",
+                   linewidth=1.5, zorder=2)
+        ax.annotate(f"nli-deberta  {nli_auc:.3f}",
+                    (xs[-1], nli_auc), xytext=(-4, 6),
+                    textcoords="offset points", ha="right",
+                    fontsize=9, color=color("nli-deberta"))
+    ax.set_xlabel("peak VRAM (GB)", color=INK_2, fontsize=9)
+    ax.set_ylabel("ROC-AUC", color=INK_2, fontsize=9)
+    ax.set_title("How many GB of judge to beat a 1.5 GB NLI model?",
+                 color=INK, fontsize=11, loc="left")
+    ax.margins(x=0.15, y=0.15)
+    fig.tight_layout()
+    fig.savefig(outfile, facecolor=SURFACE)
+    plt.close(fig)
+    print(f"wrote {outfile}")
+
+
 def main():
     rows = json.load(open("results.json"))
     scatter(rows, "results.png",
@@ -138,6 +169,17 @@ def main():
               "comparison.png")
         table(rt, "RAGTruth (LLM-era summaries)")
 
+    if os.path.exists("results-scale.json"):
+        scale = json.load(open("results-scale.json"))
+        nli_auc = None
+        if os.path.exists("results-ragtruth.json"):
+            for r in json.load(open("results-ragtruth.json")):
+                if r["scorer"] == "nli-deberta":
+                    nli_auc = r["roc_auc"]
+        scale_curve(scale, nli_auc, "scale.png")
+        table(scale, "Judge scaling curve (RAGTruth)")
+
 
 if __name__ == "__main__":
     main()
+

@@ -177,19 +177,34 @@ class LLMJudgeScorer(Scorer):
     def __init__(self,
                  model_name: str = None,
                  device: str = None,
-                 max_source_chars: int = 6000):
+                 max_source_chars: int = 6000,
+                 name: str = None,
+                 load_in_4bit: bool = False):
         import torch
         from transformers import AutoModelForCausalLM, AutoTokenizer
         self.device = device or ("cuda" if torch.cuda.is_available() else "cpu")
         if model_name is None:
             model_name = self._pick_model()
             print(f"llm-judge: auto-selected {model_name}")
+        self.model_name = model_name
+        self.name = name or "llm-judge"
         self.max_source_chars = max_source_chars
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)
-        self.model = AutoModelForCausalLM.from_pretrained(
-            model_name,
-            dtype=torch.bfloat16 if self.device == "cuda" else torch.float32,
-        ).to(self.device).eval()
+        if load_in_4bit and self.device == "cuda":
+            from transformers import BitsAndBytesConfig
+            quant = BitsAndBytesConfig(
+                load_in_4bit=True,
+                bnb_4bit_compute_dtype=torch.bfloat16,
+            )
+            self.model = AutoModelForCausalLM.from_pretrained(
+                model_name, quantization_config=quant, device_map="auto",
+            ).eval()
+        else:
+            self.model = AutoModelForCausalLM.from_pretrained(
+                model_name,
+                dtype=(torch.bfloat16 if self.device == "cuda"
+                       else torch.float32),
+            ).to(self.device).eval()
         self.yes_id = self.tokenizer.encode("yes",
                                             add_special_tokens=False)[0]
         self.no_id = self.tokenizer.encode("no", add_special_tokens=False)[0]
@@ -218,7 +233,10 @@ class LLMJudgeScorer(Scorer):
                          claim=claim)}]
         enc = self.tokenizer.apply_chat_template(
             messages, add_generation_prompt=True,
-            return_dict=True, return_tensors="pt").to(self.device)
+            return_dict=True, return_tensors="pt")
+        # device_map="auto" (4-bit) puts weights on the model's first device
+        dev = next(self.model.parameters()).device
+        enc = {k: v.to(dev) for k, v in enc.items()}
         with torch.no_grad():
             logits = self.model(**enc).logits[0, -1]
         two = torch.softmax(
