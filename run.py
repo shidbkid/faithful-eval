@@ -12,10 +12,11 @@ import statistics
 import time
 
 import data
-from scorers import RandomScorer
+from scorers import RandomScorer, RougeLScorer
 
 SCORERS = [
     RandomScorer(),
+    RougeLScorer(),
 ]
 
 
