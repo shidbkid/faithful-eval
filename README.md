@@ -14,42 +14,55 @@ public models, and public tooling.
 
 ## Results
 
-**Answer:** it depends which era of hallucination you measure.
+**Answer:** it depends on the era of the hallucination — and that's the
+finding. On 2019-era summaries (SummEval), a ~1.5 GB NLI model beats a 3B LLM
+judge on every quality metric at ~9× less latency. On LLM-era summaries
+(RAGTruth), the ranking flips: NLI degrades sharply and the judge takes the
+lead. The cheap detector stops working as the hallucinations get more fluent.
 
-- On **2019-era** SummEval errors, DeBERTa NLI is the best local quality/cost
-  trade-off — it beats a 3B LLM judge on Spearman / bal_acc / ROC-AUC at ~4×
-  less VRAM.
-- On **LLM-era** RAGTruth summaries (GPT-4 / GPT-3.5 / Llama-2 / Mistral), the
-  ranking **flips**: the 3B judge leads, and NLI falls to ROUGE-L levels on
-  ROC-AUC. Cheap detectors that win on SummEval stop working when
-  hallucinations get fluent.
+![Same scorers, different era of hallucination](comparison.png)
 
-Both runs on a local NVIDIA RTX 4000 Ada (~12 GB); judge =
-`Qwen/Qwen2.5-3B-Instruct`. Latencies are only comparable within a run.
+The judge leads and NLI clearly degrades, though their RAGTruth AUC confidence
+intervals overlap (NLI 0.615–0.695 vs judge 0.680–0.752) — the flip is
+**directional, not yet decisive**. CIs are Hanley–McNeil 95% approximations
+from (AUC, n_pos, n_neg); see `_add_auc_ci.py`.
 
-### SummEval (n=1600)
+### SummEval — 2019-era system summaries (n=1600)
 
-| scorer | spearman | balanced acc | ROC-AUC | median ms/doc | peak VRAM (GB) |
-|---|---|---|---|---|---|
-| random | 0.013 | 0.516 | 0.506 | 0.0 | 0.0 |
-| rouge-l | 0.386 | 0.687 | 0.705 | 4.7 | 0.0 |
-| bertscore | 0.353 | 0.710 | 0.750 | 48.0 | 1.1 |
-| nli-deberta | 0.403 | 0.743 | 0.786 | 77.3 | 1.5 |
-| llm-judge | 0.379 | 0.704 | 0.771 | 719.2 | 6.6 |
+| scorer | spearman | balanced acc | ROC-AUC | AUC 95% CI | median ms/doc | peak VRAM (GB) |
+|---|---|---|---|---|---|---|
+| random | 0.013 | 0.516 | 0.506 | 0.470–0.542 | 0.0 | 0.0 |
+| rouge-l | 0.386 | 0.687 | 0.705 | 0.676–0.735 | 4.7 | 0.0 |
+| bertscore | 0.353 | 0.710 | 0.750 | 0.723–0.777 | 48.0 | 1.1 |
+| nli-deberta | 0.403 | 0.743 | 0.786 | 0.761–0.810 | 77.3 | 1.5 |
+| llm-judge | 0.379 | 0.704 | 0.771 | 0.745–0.796 | 719.2 | 6.6 |
 
 ![quality vs cost (SummEval)](results.png)
 
-### RAGTruth Summary (n=900)
+### RAGTruth — LLM-era summaries (n=900)
 
-| scorer | spearman | balanced acc | ROC-AUC | median ms/doc | peak VRAM (GB) |
-|---|---|---|---|---|---|
-| random | 0.087 | 0.552 | 0.558 | 0.0 | 0.0 |
-| rouge-l | 0.227 | 0.638 | 0.658 | 7.9 | 0.0 |
-| bertscore | 0.202 | 0.632 | 0.640 | 48.2 | 1.1 |
-| nli-deberta | 0.227 | 0.619 | 0.655 | 403.2 | 0.8 |
-| llm-judge | 0.312 | 0.661 | 0.716 | 1853.6 | 6.8 |
+| scorer | spearman | balanced acc | ROC-AUC | AUC 95% CI | median ms/doc | peak VRAM (GB) |
+|---|---|---|---|---|---|---|
+| random | 0.087 | 0.552 | 0.558 | 0.514–0.602 | 0.0 | 0.0 |
+| rouge-l | 0.227 | 0.638 | 0.658 | 0.618–0.698 | 7.9 | 0.0 |
+| bertscore | 0.202 | 0.632 | 0.640 | 0.599–0.681 | 48.2 | 1.1 |
+| nli-deberta | 0.227 | 0.619 | 0.655 | 0.615–0.695 | 403.2 | 0.8 |
+| llm-judge | 0.312 | 0.661 | 0.716 | 0.680–0.752 | 1853.6 | 6.8 |
 
 ![quality vs cost (RAGTruth)](results-ragtruth.png)
+
+Both runs on a single RTX 4000 Ada (~12 GB); the judge auto-selected
+`Qwen/Qwen2.5-3B-Instruct`. Latencies comparable only within one machine.
+
+### What this means
+
+If your summaries come from older, weaker models — or your hallucinations are
+of the clumsy kind (wrong entities, garbled repetition) — a small NLI model is
+the clear on-prem choice. If your summaries come from modern LLMs, whose
+fabrications are fluent and plausible, the shallow entailment check loses its
+edge and a local LLM judge becomes worth its ~4× VRAM and ~9× latency.
+BERTScore is dominated on both datasets, and ROUGE-L remains an embarrassingly
+strong floor for a CPU-only metric from 2004.
 
 ## Benchmark
 
