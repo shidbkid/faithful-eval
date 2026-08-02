@@ -120,6 +120,28 @@ At each scorer’s own oracle threshold, NLI vs 3B judge on Summary:
 QA / Data2txt complementarity: 69% / 73%. Naive Summary cascade (ROUGE→NLI→judge
 tertile bands): AUC 0.639 at 92 ms/doc — fast, but does not beat NLI alone.
 
+### Learned router (`router.py`)
+
+Path 2: logistic regression on **cheap features only** (lengths, ROUGE, NLI,
+task) picks among {ROUGE, NLI, 3B judge}. Train on one corpus, test on another.
+Scores are z-calibrated on train so mixing doesn’t destroy AUC. Soft-gated =
+mixture that only *calls* the judge when p(judge) ≥ ⅓.
+
+| train → test | rouge | nli | judge | task-heur | hard | soft-gated | judge% (hard/soft) |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| RAGTruth → TofuEval | 0.724 | 0.704 | **0.792** | 0.792 | 0.691 | 0.744 | 5% / 29% |
+| TofuEval → Summary | 0.658 | 0.655 | **0.716** | 0.716 | 0.607 | 0.661 | 0% / 0% |
+| Summary+D2T → QA | 0.729 | 0.689 | 0.626 | 0.729 | 0.734 | **0.763** | 41% / 52% |
+| QA+D2T → Summary | 0.658 | 0.655 | **0.716** | 0.716 | 0.663 | 0.689 | 3% / 4% |
+| Summary+QA → D2T | 0.610 | 0.594 | **0.738** | 0.738 | 0.724 | 0.731 | 90% / 93% |
+
+**Verdict:** the learned router does **not** replace the hand-written recipe
+cross-dataset (TofuEval still wants always-judge). It *does* beat always-ROUGE
+on leave-one-task QA (0.763 vs 0.729) by calling the judge ~40% of the time.
+Oracle routing hits ~0.9 AUC — headroom exists; LR on these features isn’t
+enough to claim “method dominates the tools.” Deployable baseline remains
+**task heuristic + optional 1.5B→7B cascade**.
+
 ### Detectability vs generator strength (`by_generator.py`)
 
 Zero-GPU follow-up: slice RAGTruth preds by generating model
@@ -246,6 +268,7 @@ python analyze.py --preds results-ragtruth.preds.json
 python run.py --dataset ragtruth --judge-model 0.5b,1.5b,3b,7b-4bit \
     --out results-scale.json --save-preds
 python cascade.py              # task-aware cascade from saved preds
+python router.py               # learned router (cross-dataset / leave-one-task)
 python run.py --dataset tofueval --out results-tofueval.json --save-preds
 python plot.py                 # also builds comparison.png + scale.png
 python smoke_test.py

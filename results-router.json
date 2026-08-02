@@ -1,0 +1,540 @@
+{
+  "results": [
+    {
+      "train": [
+        "ragtruth-summary",
+        "ragtruth-qa",
+        "ragtruth-d2t"
+      ],
+      "test": "tofueval",
+      "test_task": "Dialogue",
+      "n_train": 2700,
+      "n_test": 1498,
+      "train_label_frac": {
+        "rouge-l": 0.702962962962963,
+        "nli-deberta": 0.15518518518518518,
+        "llm-judge": 0.14185185185185184
+      },
+      "thresholds": {
+        "rouge-l": 0.6540880503144654,
+        "nli-deberta": 0.038482666015625,
+        "llm-judge": 0.5482068061828613
+      },
+      "singles": {
+        "rouge-l": {
+          "roc_auc": 0.7238824101068999,
+          "roc_auc_ci": [
+            0.6924521486736452,
+            0.7599053080291046
+          ],
+          "balanced_acc": 0.6789781129843242
+        },
+        "nli-deberta": {
+          "roc_auc": 0.7035759179448177,
+          "roc_auc_ci": [
+            0.6741086125361508,
+            0.7316726149822684
+          ],
+          "balanced_acc": 0.6715653652765454
+        },
+        "llm-judge": {
+          "roc_auc": 0.7921684201630963,
+          "roc_auc_ci": [
+            0.7632587426950971,
+            0.8220578953016331
+          ],
+          "balanced_acc": 0.7174282756580893
+        }
+      },
+      "task_heuristic": {
+        "roc_auc": 0.7921684201630963,
+        "roc_auc_ci": [
+          0.7632587426950971,
+          0.8220578953016331
+        ],
+        "balanced_acc": 0.7174282756580893,
+        "choice_frac": {
+          "rouge-l": 0.0,
+          "nli-deberta": 0.0,
+          "llm-judge": 1.0
+        },
+        "judge_frac": 1.0
+      },
+      "learned_router": {
+        "roc_auc": 0.6907732813622343,
+        "roc_auc_ci": [
+          0.6585285601450691,
+          0.722684640306797
+        ],
+        "balanced_acc": 0.6708813960366755,
+        "choice_frac": {
+          "rouge-l": 0.30240320427236317,
+          "nli-deberta": 0.6448598130841121,
+          "llm-judge": 0.0527369826435247
+        },
+        "judge_frac": 0.0527369826435247
+      },
+      "learned_soft_gated": {
+        "roc_auc": 0.7444107301305616,
+        "roc_auc_ci": [
+          0.7114021461764085,
+          0.7736790851302479
+        ],
+        "balanced_acc": 0.6792369121561668,
+        "judge_frac": 0.2890520694259012
+      },
+      "learned_soft_always": {
+        "roc_auc": 0.766104966831453,
+        "roc_auc_ci": [
+          0.7373495141328138,
+          0.7939889106113025
+        ],
+        "balanced_acc": 0.7024179236912156,
+        "judge_frac": 1.0
+      },
+      "oracle_router": {
+        "roc_auc": 0.9176279207335108,
+        "roc_auc_ci": [
+          0.892065015677989,
+          0.9412080342211744
+        ],
+        "balanced_acc": 0.9255767524401065,
+        "choice_frac": {
+          "rouge-l": 0.8050734312416555,
+          "nli-deberta": 0.08811748998664887,
+          "llm-judge": 0.1068090787716956
+        },
+        "judge_frac": 0.1068090787716956
+      }
+    },
+    {
+      "train": [
+        "tofueval"
+      ],
+      "test": "ragtruth-summary",
+      "test_task": "Summary",
+      "n_train": 1498,
+      "n_test": 900,
+      "train_label_frac": {
+        "rouge-l": 0.7757009345794392,
+        "nli-deberta": 0.14953271028037382,
+        "llm-judge": 0.07476635514018691
+      },
+      "thresholds": {
+        "rouge-l": 0.7333333333333333,
+        "nli-deberta": 0.5888671875,
+        "llm-judge": 0.06005859375
+      },
+      "singles": {
+        "rouge-l": {
+          "roc_auc": 0.6577959488393057,
+          "roc_auc_ci": [
+            0.6149824592257199,
+            0.6996505892602032
+          ],
+          "balanced_acc": 0.638184584178499
+        },
+        "nli-deberta": {
+          "roc_auc": 0.6551125478927203,
+          "roc_auc_ci": [
+            0.6119508323007449,
+            0.6996592227213798
+          ],
+          "balanced_acc": 0.6189570655848546
+        },
+        "llm-judge": {
+          "roc_auc": 0.7162145030425964,
+          "roc_auc_ci": [
+            0.6810391563230815,
+            0.7501312499390218
+          ],
+          "balanced_acc": 0.6607082488167682
+        }
+      },
+      "task_heuristic": {
+        "roc_auc": 0.7162145030425964,
+        "roc_auc_ci": [
+          0.6810391563230815,
+          0.7501312499390218
+        ],
+        "balanced_acc": 0.6607082488167682,
+        "choice_frac": {
+          "rouge-l": 0.0,
+          "nli-deberta": 0.0,
+          "llm-judge": 1.0
+        },
+        "judge_frac": 1.0
+      },
+      "learned_router": {
+        "roc_auc": 0.6074557696641876,
+        "roc_auc_ci": [
+          0.5590033047094753,
+          0.6510147638665218
+        ],
+        "balanced_acc": 0.5799104124408384,
+        "choice_frac": {
+          "rouge-l": 0.2477777777777778,
+          "nli-deberta": 0.7522222222222222,
+          "llm-judge": 0.0
+        },
+        "judge_frac": 0.0
+      },
+      "learned_soft_gated": {
+        "roc_auc": 0.6605321726391706,
+        "roc_auc_ci": [
+          0.6144832889857287,
+          0.7036192194923201
+        ],
+        "balanced_acc": 0.6166751183231913,
+        "judge_frac": 0.0011111111111111111
+      },
+      "learned_soft_always": {
+        "roc_auc": 0.6626591728645481,
+        "roc_auc_ci": [
+          0.6177887893226973,
+          0.7052875702305986
+        ],
+        "balanced_acc": 0.6147312373225152,
+        "judge_frac": 1.0
+      },
+      "oracle_router": {
+        "roc_auc": 0.9707361392832995,
+        "roc_auc_ci": [
+          0.9501249045648416,
+          0.9885338499651612
+        ],
+        "balanced_acc": 0.96986984448952,
+        "choice_frac": {
+          "rouge-l": 0.7222222222222222,
+          "nli-deberta": 0.1688888888888889,
+          "llm-judge": 0.10888888888888888
+        },
+        "judge_frac": 0.10888888888888888
+      }
+    },
+    {
+      "train": [
+        "ragtruth-summary",
+        "ragtruth-d2t"
+      ],
+      "test": "ragtruth-qa",
+      "test_task": "QA",
+      "n_train": 1800,
+      "n_test": 900,
+      "train_label_frac": {
+        "rouge-l": 0.7127777777777777,
+        "nli-deberta": 0.14888888888888888,
+        "llm-judge": 0.13833333333333334
+      },
+      "thresholds": {
+        "rouge-l": 0.6308724832214765,
+        "nli-deberta": 0.03240966796875,
+        "llm-judge": 0.5482068061828613
+      },
+      "singles": {
+        "rouge-l": {
+          "roc_auc": 0.7293243243243243,
+          "roc_auc_ci": [
+            0.6910013077375264,
+            0.763610215018846
+          ],
+          "balanced_acc": 0.6983108108108108
+        },
+        "nli-deberta": {
+          "roc_auc": 0.6889907094594594,
+          "roc_auc_ci": [
+            0.64293924253024,
+            0.733638892856499
+          ],
+          "balanced_acc": 0.6427364864864865
+        },
+        "llm-judge": {
+          "roc_auc": 0.6259923986486486,
+          "roc_auc_ci": [
+            0.5842096433294212,
+            0.6674335370809759
+          ],
+          "balanced_acc": 0.6256756756756756
+        }
+      },
+      "task_heuristic": {
+        "roc_auc": 0.7293243243243243,
+        "roc_auc_ci": [
+          0.6910013077375264,
+          0.763610215018846
+        ],
+        "balanced_acc": 0.6983108108108108,
+        "choice_frac": {
+          "rouge-l": 1.0,
+          "nli-deberta": 0.0,
+          "llm-judge": 0.0
+        },
+        "judge_frac": 0.0
+      },
+      "learned_router": {
+        "roc_auc": 0.7344974662162161,
+        "roc_auc_ci": [
+          0.6927959853174309,
+          0.7758593015677417
+        ],
+        "balanced_acc": 0.6934121621621622,
+        "choice_frac": {
+          "rouge-l": 0.4211111111111111,
+          "nli-deberta": 0.17,
+          "llm-judge": 0.4088888888888889
+        },
+        "judge_frac": 0.4088888888888889
+      },
+      "learned_soft_gated": {
+        "roc_auc": 0.7625168918918919,
+        "roc_auc_ci": [
+          0.722803807030074,
+          0.8009660830168699
+        ],
+        "balanced_acc": 0.7163006756756757,
+        "judge_frac": 0.5233333333333333
+      },
+      "learned_soft_always": {
+        "roc_auc": 0.7627449324324325,
+        "roc_auc_ci": [
+          0.7218654379623451,
+          0.8028380183362301
+        ],
+        "balanced_acc": 0.7151182432432432,
+        "judge_frac": 1.0
+      },
+      "oracle_router": {
+        "roc_auc": 0.8880067567567568,
+        "roc_auc_ci": [
+          0.8556964311939388,
+          0.9165607863100813
+        ],
+        "balanced_acc": 0.8955236486486486,
+        "choice_frac": {
+          "rouge-l": 0.7055555555555556,
+          "nli-deberta": 0.18333333333333332,
+          "llm-judge": 0.1111111111111111
+        },
+        "judge_frac": 0.1111111111111111
+      }
+    },
+    {
+      "train": [
+        "ragtruth-qa",
+        "ragtruth-d2t"
+      ],
+      "test": "ragtruth-summary",
+      "test_task": "Summary",
+      "n_train": 1800,
+      "n_test": 900,
+      "train_label_frac": {
+        "rouge-l": 0.6844444444444444,
+        "nli-deberta": 0.14166666666666666,
+        "llm-judge": 0.1738888888888889
+      },
+      "thresholds": {
+        "rouge-l": 0.6296296296296297,
+        "nli-deberta": 0.037017822265625,
+        "llm-judge": 0.545292854309082
+      },
+      "singles": {
+        "rouge-l": {
+          "roc_auc": 0.6577959488393057,
+          "roc_auc_ci": [
+            0.6149824592257199,
+            0.6996505892602032
+          ],
+          "balanced_acc": 0.638184584178499
+        },
+        "nli-deberta": {
+          "roc_auc": 0.6551125478927203,
+          "roc_auc_ci": [
+            0.6119508323007449,
+            0.6996592227213798
+          ],
+          "balanced_acc": 0.6189570655848546
+        },
+        "llm-judge": {
+          "roc_auc": 0.7162145030425964,
+          "roc_auc_ci": [
+            0.6810391563230815,
+            0.7501312499390218
+          ],
+          "balanced_acc": 0.6607082488167682
+        }
+      },
+      "task_heuristic": {
+        "roc_auc": 0.7162145030425964,
+        "roc_auc_ci": [
+          0.6810391563230815,
+          0.7501312499390218
+        ],
+        "balanced_acc": 0.6607082488167682,
+        "choice_frac": {
+          "rouge-l": 0.0,
+          "nli-deberta": 0.0,
+          "llm-judge": 1.0
+        },
+        "judge_frac": 1.0
+      },
+      "learned_router": {
+        "roc_auc": 0.662810598377282,
+        "roc_auc_ci": [
+          0.6189356480630811,
+          0.7065457736795611
+        ],
+        "balanced_acc": 0.6400016903313049,
+        "choice_frac": {
+          "rouge-l": 0.9233333333333333,
+          "nli-deberta": 0.043333333333333335,
+          "llm-judge": 0.03333333333333333
+        },
+        "judge_frac": 0.03333333333333333
+      },
+      "learned_soft_gated": {
+        "roc_auc": 0.6889790398918187,
+        "roc_auc_ci": [
+          0.6464300980548998,
+          0.7288016741314289
+        ],
+        "balanced_acc": 0.6492985125084516,
+        "judge_frac": 0.044444444444444446
+      },
+      "learned_soft_always": {
+        "roc_auc": 0.7215531327473518,
+        "roc_auc_ci": [
+          0.6801251913981081,
+          0.758863199684155
+        ],
+        "balanced_acc": 0.668526031102096,
+        "judge_frac": 1.0
+      },
+      "oracle_router": {
+        "roc_auc": 0.9352814401622718,
+        "roc_auc_ci": [
+          0.9100807776831843,
+          0.95947350863575
+        ],
+        "balanced_acc": 0.919709263015551,
+        "choice_frac": {
+          "rouge-l": 0.7655555555555555,
+          "nli-deberta": 0.17666666666666667,
+          "llm-judge": 0.057777777777777775
+        },
+        "judge_frac": 0.057777777777777775
+      }
+    },
+    {
+      "train": [
+        "ragtruth-summary",
+        "ragtruth-qa"
+      ],
+      "test": "ragtruth-d2t",
+      "test_task": "Data2txt",
+      "n_train": 1800,
+      "n_test": 900,
+      "train_label_frac": {
+        "rouge-l": 0.5316666666666666,
+        "nli-deberta": 0.2561111111111111,
+        "llm-judge": 0.21222222222222223
+      },
+      "thresholds": {
+        "rouge-l": 0.7984189723320159,
+        "nli-deberta": 0.04351806640625,
+        "llm-judge": 0.5482068061828613
+      },
+      "singles": {
+        "rouge-l": {
+          "roc_auc": 0.6095185059641987,
+          "roc_auc_ci": [
+            0.5698892843244837,
+            0.6477830363121684
+          ],
+          "balanced_acc": 0.583159814698239
+        },
+        "nli-deberta": {
+          "roc_auc": 0.5940148176843736,
+          "roc_auc_ci": [
+            0.5564845524392852,
+            0.6329249381733814
+          ],
+          "balanced_acc": 0.5753151582651365
+        },
+        "llm-judge": {
+          "roc_auc": 0.7379249861454114,
+          "roc_auc_ci": [
+            0.7057362197668109,
+            0.7717036662050285
+          ],
+          "balanced_acc": 0.6855277387697125
+        }
+      },
+      "task_heuristic": {
+        "roc_auc": 0.7379249861454114,
+        "roc_auc_ci": [
+          0.7057362197668109,
+          0.7717036662050285
+        ],
+        "balanced_acc": 0.6855277387697125,
+        "choice_frac": {
+          "rouge-l": 0.0,
+          "nli-deberta": 0.0,
+          "llm-judge": 1.0
+        },
+        "judge_frac": 1.0
+      },
+      "learned_router": {
+        "roc_auc": 0.7239843106871338,
+        "roc_auc_ci": [
+          0.6910829419880007,
+          0.7570442475307293
+        ],
+        "balanced_acc": 0.6739463787064388,
+        "choice_frac": {
+          "rouge-l": 0.0,
+          "nli-deberta": 0.1,
+          "llm-judge": 0.9
+        },
+        "judge_frac": 0.9
+      },
+      "learned_soft_gated": {
+        "roc_auc": 0.7307797846754799,
+        "roc_auc_ci": [
+          0.6991432132499906,
+          0.7638369455963482
+        ],
+        "balanced_acc": 0.6846480396429551,
+        "judge_frac": 0.9311111111111111
+      },
+      "learned_soft_always": {
+        "roc_auc": 0.735046459950823,
+        "roc_auc_ci": [
+          0.7035687721436585,
+          0.767150573429803
+        ],
+        "balanced_acc": 0.6926218262231045,
+        "judge_frac": 1.0
+      },
+      "oracle_router": {
+        "roc_auc": 0.9921661044124848,
+        "roc_auc_ci": [
+          0.9878947839884124,
+          0.995730858858832
+        ],
+        "balanced_acc": 0.9643762206834213,
+        "choice_frac": {
+          "rouge-l": 0.6433333333333333,
+          "nli-deberta": 0.08222222222222222,
+          "llm-judge": 0.27444444444444444
+        },
+        "judge_frac": 0.27444444444444444
+      }
+    }
+  ],
+  "takeaway": "RAGTruth\u2192TofuEval: hard=0.691 soft-gated=0.744 (judge 29%) soft-all=0.766 vs judge=0.792 / heuristic=0.792. Leave-one-task QA: soft-gated=0.763 vs rouge=0.729. Clearest win: QA leave-one-task beats always-ROUGE.",
+  "candidates": [
+    "rouge-l",
+    "nli-deberta",
+    "llm-judge"
+  ]
+}
