@@ -35,19 +35,43 @@ judge auto-selected `Qwen/Qwen2.5-3B-Instruct`.
 
 Latencies are only comparable within a single machine's run.
 
+### RAGTruth shakedown (LLM-era, n=200 Summary)
+
+Same scorers, same machine, on [RAGTruth](https://arxiv.org/abs/2401.00396)
+test Summary pairs (GPT-4 / GPT-3.5 / Llama-2 / Mistral responses with human
+hallucination spans). **The ranking flips:** the 3B LLM judge leads, and NLI
+drops behind even ROUGE-L on ROC-AUC.
+
+| scorer | spearman | balanced acc | ROC-AUC | median ms/doc | peak VRAM (GB) |
+|---|---|---|---|---|---|
+| random | 0.119 | 0.625 | 0.580 | 0.0 | 0.0 |
+| rouge-l | 0.299 | 0.655 | 0.706 | 8.0 | 0.0 |
+| bertscore | 0.164 | 0.620 | 0.610 | 66.7 | 1.1 |
+| nli-deberta | 0.234 | 0.636 | 0.658 | 149.3 | 0.8 |
+| llm-judge | 0.321 | 0.660 | 0.716 | 769.4 | 6.8 |
+
+Preliminary — full RAGTruth Summary run is `python run.py --dataset ragtruth`
+(900 pairs). If it holds, the claim becomes: *cheap NLI detectors that win on
+2019-era SummEval stop working when hallucinations get fluent.*
+
 ## Benchmark
 
-**Dataset:** [SummEval](https://github.com/Yale-LILY/SummEval) — 100
-CNN/DailyMail articles × 16 system summaries, each rated 1–5 for
-*consistency* by 3 experts. Mean expert consistency is the faithfulness
-label. The loader fetches the processed copy vendored in the
-[BARTScore](https://github.com/neulab/BARTScore) repo (Apache-2.0), which
-pairs every summary with its source article; it is cached under `data/`.
+Two datasets, same scorer interface. Pick with `--dataset`:
+
+| flag | what it is | label |
+|---|---|---|
+| `--dataset summeval` (default) | [SummEval](https://github.com/Yale-LILY/SummEval) — 100 CNN/DM articles × 16 **2019-era** system summaries, 3 expert consistency ratings | continuous 1–5; binary = consistency == 5.0 |
+| `--dataset ragtruth` | [RAGTruth](https://arxiv.org/abs/2401.00396) (via `wandb/RAGTruth-processed`) — responses from GPT-4 / GPT-3.5 / Llama-2 / Mistral with human hallucination spans | soft label from span count; binary = zero spans |
+
+RAGTruth defaults to the **Summary** task (900 test pairs) so the comparison
+stays summary-faithfulness; pass `--task all` for QA + Data2txt too. SummEval
+is fetched via the [BARTScore](https://github.com/neulab/BARTScore) vendored
+pickle (Apache-2.0) and cached under `data/`.
 
 **Metrics per scorer:**
 
-- **spearman** — rank correlation of scorer output with mean expert consistency (1600 pairs).
-- **balanced acc / ROC-AUC** — binary task: *faithful* iff consistency = 5.0 (81.6% of pairs; all three experts rated it perfectly consistent). Balanced accuracy is reported at the best threshold over the scorer's own outputs — an oracle threshold, applied identically to every scorer.
+- **spearman** — rank correlation of scorer output with the dataset's continuous label.
+- **balanced acc / ROC-AUC** — binary faithfulness (see table above). Balanced accuracy uses an oracle threshold over the scorer's own outputs — same treatment for every scorer.
 - **median ms/doc** — median wall-clock per `score(source, summary)` call.
 - **peak VRAM** — `torch.cuda.max_memory_allocated`, reset before each scorer; `0.0` means CPU-only.
 
@@ -94,6 +118,8 @@ project-local `.venv` on Python 3.14+, set
 ```bash
 python run.py --only random,rouge-l      # subset of scorers
 python run.py --limit 200                # seeded random subsample of pairs
+python run.py --dataset ragtruth         # LLM-era RAGTruth Summary (900 pairs)
+python run.py --dataset ragtruth --task all --limit 200
 python smoke_test.py                     # model-free tests of scorer logic
 ```
 

@@ -1,4 +1,5 @@
 results.json
+results-*.json
 __pycache__/
 .cache/
 data/

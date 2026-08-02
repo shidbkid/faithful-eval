@@ -60,9 +60,9 @@ def evaluate(scorer, examples):
     labels = [ex["label"] for ex in examples]
     rho = spearmanr(preds, labels).statistic
 
-    # Binary faithfulness: an example is "faithful" iff every annotator gave
-    # it a perfect consistency score (label == 5.0). See README.
-    binary = [1 if l >= 5.0 else 0 for l in labels]
+    # Binary labels come from the dataset loader (SummEval: consistency==5;
+    # RAGTruth: zero hallucination spans). See data.py / README.
+    binary = [ex["binary"] for ex in examples]
     if 0 < sum(binary) < len(binary):
         auc = roc_auc_score(binary, preds)
         # Balanced accuracy at the best threshold over observed scores
@@ -110,6 +110,12 @@ def print_table(rows):
 
 def main():
     parser = argparse.ArgumentParser()
+    parser.add_argument("--dataset", default="summeval",
+                        choices=list(data.DATASETS),
+                        help="benchmark to evaluate (default: summeval)")
+    parser.add_argument("--task", default="Summary",
+                        help="RAGTruth task filter: Summary|QA|Data2txt|all "
+                             "(default: Summary; ignored for summeval)")
     parser.add_argument("--limit", type=int, default=None,
                         help="random (seeded) subsample of pairs, for quick runs")
     parser.add_argument("--only", default=None,
@@ -119,11 +125,16 @@ def main():
                         help="where to dump raw per-scorer results")
     args = parser.parse_args()
 
-    examples = data.load_summeval()
+    load_kwargs = {}
+    if args.dataset == "ragtruth":
+        load_kwargs["task"] = None if args.task == "all" else args.task
+    examples = data.load(args.dataset, **load_kwargs)
     if args.limit and args.limit < len(examples):
         import random as _random
         examples = _random.Random(0).sample(examples, args.limit)
-    print(f"{len(examples)} (source, summary) pairs\n")
+    n_pos = sum(ex["binary"] for ex in examples)
+    print(f"dataset={args.dataset}  {len(examples)} pairs  "
+          f"faithful={n_pos} ({n_pos / len(examples):.1%})\n")
 
     only = set(args.only.split(",")) if args.only else None
     rows = []
