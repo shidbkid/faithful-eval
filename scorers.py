@@ -216,11 +216,11 @@ class LLMJudgeScorer(Scorer):
                      "content": self.PROMPT.format(
                          source=source[: self.max_source_chars],
                          claim=claim)}]
-        ids = self.tokenizer.apply_chat_template(
+        enc = self.tokenizer.apply_chat_template(
             messages, add_generation_prompt=True,
-            return_tensors="pt").to(self.device)
+            return_dict=True, return_tensors="pt").to(self.device)
         with torch.no_grad():
-            logits = self.model(ids).logits[0, -1]
+            logits = self.model(**enc).logits[0, -1]
         two = torch.softmax(
             torch.stack([logits[self.yes_id], logits[self.no_id]]), dim=0)
         return two[0].item()
