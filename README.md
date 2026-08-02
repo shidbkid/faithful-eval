@@ -65,7 +65,7 @@ class Scorer:
 | `rouge-l` | ROUGE-Lsum recall of the summary *against the source* — fraction of the summary supported lexically (note: not summary-vs-reference ROUGE, which measures relevance) |
 | `bertscore` | BERTScore precision of summary vs source (roberta-large embeddings) |
 | `nli-deberta` | SummaC-style zero-shot NLI (DeBERTa-v3 MNLI): min over summary sentences of max entailment over overlapping 2-sentence source chunks |
-| `llm-judge` | Qwen2.5-7B-Instruct verifies each summary sentence against the article; score = mean P("yes") read from first-token logits |
+| `llm-judge` | Qwen2.5-Instruct (7B/3B/1.5B, auto-sized to detected VRAM) verifies each summary sentence against the article; score = mean P("yes") read from first-token logits |
 
 ## Reproducing
 
@@ -77,7 +77,9 @@ python plot.py           # results.json -> results.png + markdown table
 
 `python run.py` downloads the dataset on first use and runs every scorer in
 `SCORERS` (model weights fetched from Hugging Face on first use; the two
-model scorers want a CUDA GPU — a 7B judge in bf16 needs ~16 GB VRAM).
+model scorers want a CUDA GPU). The NLI scorer needs ~2–4 GB of VRAM; the
+LLM judge picks the largest Qwen2.5 Instruct model that fits your card
+(7B needs ~16 GB, 3B ~7 GB, 1.5B ~4 GB — pass `model_name` to override).
 Useful during development:
 
 ```bash

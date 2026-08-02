@@ -175,12 +175,15 @@ class LLMJudgeScorer(Scorer):
     )
 
     def __init__(self,
-                 model_name: str = "Qwen/Qwen2.5-7B-Instruct",
+                 model_name: str = None,
                  device: str = None,
                  max_source_chars: int = 6000):
         import torch
         from transformers import AutoModelForCausalLM, AutoTokenizer
         self.device = device or ("cuda" if torch.cuda.is_available() else "cpu")
+        if model_name is None:
+            model_name = self._pick_model()
+            print(f"llm-judge: auto-selected {model_name}")
         self.max_source_chars = max_source_chars
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)
         self.model = AutoModelForCausalLM.from_pretrained(
@@ -190,6 +193,22 @@ class LLMJudgeScorer(Scorer):
         self.yes_id = self.tokenizer.encode("yes",
                                             add_special_tokens=False)[0]
         self.no_id = self.tokenizer.encode("no", add_special_tokens=False)[0]
+
+    def _pick_model(self) -> str:
+        """Largest Qwen2.5 instruct model that fits the detected VRAM.
+
+        bf16 rule of thumb: weights ~2 bytes/param + activations/cache.
+        Explicitly pass model_name to override.
+        """
+        import torch
+        vram_gb = 0.0
+        if self.device.startswith("cuda") and torch.cuda.is_available():
+            vram_gb = (torch.cuda.get_device_properties(0).total_memory / 1e9)
+        if vram_gb >= 20:
+            return "Qwen/Qwen2.5-7B-Instruct"     # ~16 GB in bf16
+        if vram_gb >= 10:
+            return "Qwen/Qwen2.5-3B-Instruct"     # ~7 GB
+        return "Qwen/Qwen2.5-1.5B-Instruct"       # ~4 GB, also the CPU pick
 
     def _p_yes(self, source: str, claim: str) -> float:
         import torch
