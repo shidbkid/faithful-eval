@@ -1,7 +1,6 @@
 # TODO
 
-- Tune cascade escalation (current tertile bands lose to NLI on AUC).
-- Second LLM-era dataset (TofuEval / FactCheck-GPT) once HF gate is accepted.
-- RAGTruth QA / Data2txt confirmation slices.
+- Smarter task-aware cascade (Summary/Data2txt escalate to judge; QA stay cheap).
+- TofuEval / FactCheck-GPT once HF gate is accepted.
 - Medium post + README cross-link.
 - Paper decision after the post is up.

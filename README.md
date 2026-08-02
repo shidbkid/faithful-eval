@@ -14,22 +14,24 @@ public models, and public tooling.
 
 ## Results
 
-**Answer:** it depends on the era of the hallucination — and how big a judge
-you can afford.
+**Answer:** it depends on the *era* and the *task* — and that's the finding.
 
-1. On **2019-era** SummEval, a ~1.5 GB NLI model beats a 3B LLM judge.
-2. On **LLM-era** RAGTruth, NLI collapses to ROUGE-L levels. A 3B judge leads
-   (directional — bootstrap CIs still overlap). A **7B-4bit** judge clears NLI
-   with **non-overlapping** CIs (0.750–0.821 vs 0.613–0.697).
-3. You do **not** need 3B to beat NLI on RAGTruth: **1.5B is the sweet spot**
-   on this card (AUC 0.720 > 3B’s 0.716, half the VRAM).
-4. NLI and the 3B judge fail on **different** examples (75% of errors are
-   unique to one scorer) — cascades are justified, though a naive
-   ROUGE→NLI→judge band cascade trades quality for speed.
+1. **Era.** On 2019-era SummEval, NLI beats a 3B judge. On LLM-era RAGTruth
+   **Summary**, NLI collapses; a 7B-4bit judge clears it with non-overlapping
+   CIs. **1.5B is the sweet spot** on Summary (AUC 0.720 ≥ 3B).
+2. **Task.** The flip is **not universal** across RAGTruth:
+   - **Summary** — judge wins (3B directional, 7B-4bit solid vs NLI)
+   - **Data2txt** — judge wins **solidly** (3B CI 0.706–0.771 vs NLI 0.556–0.633)
+   - **QA** — ranking reverses again: **ROUGE-L wins** (0.729); even 7B-4bit
+     (0.669) fails to beat cheap lexical/NLI baselines
+3. **Complementarity** stays high (~70–75%) wherever judge and NLI disagree —
+   cascades are justified, but policy must be task-aware.
 
 ![Same scorers, different era of hallucination](comparison.png)
 
-![How many GB of judge to beat NLI?](scale.png)
+![How many GB of judge to beat NLI on Summary?](scale.png)
+
+![Does the flip hold across RAGTruth tasks?](multitask.png)
 
 Bootstrap AUC CIs from paired resampling of saved predictions
 (`run.py --save-preds` → `analyze.py`). All numbers: RTX 4000 Ada (~12 GB).
@@ -71,9 +73,21 @@ Bootstrap AUC CIs from paired resampling of saved predictions
 7B-4bit is the first whose CI sits entirely above NLI’s — and it fits in the
 same ~7 GB envelope as the 3B via 4-bit quantization.
 
-### Failure complementarity + cascade (RAGTruth)
+### RAGTruth by task (n=900 each, 3B judge unless noted)
 
-At each scorer’s own oracle threshold, NLI vs 3B judge:
+| task | rouge-l | nli-deberta | llm-judge 3B | llm-judge 7B-4bit | flip vs NLI |
+|---|---:|---:|---:|---:|---|
+| Summary | 0.658 | 0.655 | 0.716 | **0.786** | 3B directional / 7B **solid** |
+| QA | **0.729** | 0.689 | 0.626 | 0.669 | judge **loses** (even at 7B) |
+| Data2txt | 0.610 | 0.594 | **0.738** | — | 3B **solid** |
+
+AUC 95% CIs (bootstrap): Summary NLI 0.613–0.697 vs 7B 0.750–0.821
+(separated); Data2txt NLI 0.556–0.633 vs 3B 0.706–0.771 (separated); QA
+ROUGE 0.691–0.765 vs 3B judge 0.582–0.668 (judge below).
+
+### Failure complementarity + cascade (Summary)
+
+At each scorer’s own oracle threshold, NLI vs 3B judge on Summary:
 
 | | count |
 |---|---:|
@@ -83,17 +97,17 @@ At each scorer’s own oracle threshold, NLI vs 3B judge:
 | only judge wrong (NLI saves) | 151 |
 | complementarity among errors | **75%** |
 
-Naive cascade (keep ROUGE outside its middle tertile; else NLI; else judge):
-AUC 0.639 at mean **92 ms/doc** — 89% of 3B-judge AUC at 17% of its latency,
-but **does not beat NLI alone** on AUC. Cascades need better escalation
-policy; the disagreement table says the headroom is real.
+QA / Data2txt complementarity: 69% / 73%. Naive Summary cascade (ROUGE→NLI→judge
+tertile bands): AUC 0.639 at 92 ms/doc — fast, but does not beat NLI alone.
+Escalation policy must be task-aware (on QA, escalate *away* from the judge).
 
 ### What this means
 
-Clumsy / older hallucinations → ship NLI. Fluent LLM hallucinations → you
-need a local judge; **1.5B is enough to lead**, **7B-4bit is enough to win
-decisively**, and both fit a 12 GB workstation card. BERTScore is dominated
-on both datasets; ROUGE-L remains a strong CPU floor.
+- Clumsy / older hallucinations → ship **NLI**.
+- Fluent LLM **summaries** and **data-to-text** → a local judge pays off;
+  **1.5B leads on Summary**, **7B-4bit decides**, both fit a 12 GB card.
+- Fluent LLM **QA** → don't bother with a judge; **ROUGE-L** is best here.
+- One scorer never wins everywhere — measure the task, then pick.
 
 ## Benchmark
 

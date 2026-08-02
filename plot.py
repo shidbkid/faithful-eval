@@ -179,7 +179,56 @@ def main():
         scale_curve(scale, nli_auc, "scale.png")
         table(scale, "Judge scaling curve (RAGTruth)")
 
+    # Multi-task RAGTruth bar chart if QA / Data2txt results exist.
+    task_files = [
+        ("Summary", "results-ragtruth.json"),
+        ("QA", "results-ragtruth-qa.json"),
+        ("Data2txt", "results-ragtruth-d2t.json"),
+    ]
+    available = [(n, f) for n, f in task_files if os.path.exists(f)]
+    if len(available) >= 2:
+        multitask_bars(available, "multitask.png")
+
+
+def multitask_bars(available, outfile):
+    """Grouped bars: NLI vs 3B judge ROC-AUC across RAGTruth tasks."""
+    import numpy as np
+    fig, ax = new_axes(width=7, height=4.5)
+    tasks = []
+    nli_vals, judge_vals = [], []
+    for name, path in available:
+        rows = {r["scorer"]: r for r in json.load(open(path))}
+        if "nli-deberta" not in rows:
+            continue
+        judge = rows.get("llm-judge") or next(
+            (rows[k] for k in rows if k.startswith("llm-judge")), None)
+        if judge is None:
+            continue
+        tasks.append(name)
+        nli_vals.append(rows["nli-deberta"]["roc_auc"])
+        judge_vals.append(judge["roc_auc"])
+    if len(tasks) < 2:
+        return
+    x = np.arange(len(tasks))
+    w = 0.35
+    ax.bar(x - w / 2, nli_vals, w, label="nli-deberta",
+           color=color("nli-deberta"), zorder=3)
+    ax.bar(x + w / 2, judge_vals, w, label="llm-judge",
+           color=color("llm-judge"), zorder=3)
+    ax.set_xticks(x)
+    ax.set_xticklabels(tasks, color=INK)
+    ax.set_ylabel("ROC-AUC", color=INK_2, fontsize=9)
+    ax.set_title("Does the flip hold across RAGTruth tasks?",
+                 color=INK, fontsize=11, loc="left")
+    ax.legend(frameon=False, fontsize=9)
+    ax.set_ylim(0.5, 1.0)
+    fig.tight_layout()
+    fig.savefig(outfile, facecolor=SURFACE)
+    plt.close(fig)
+    print(f"wrote {outfile}")
+
 
 if __name__ == "__main__":
     main()
+
 
