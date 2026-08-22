@@ -15,8 +15,8 @@ import time
 
 import data
 import metrics
-from scorers import (BERTScoreScorer, LLMJudgeScorer, NLIScorer,
-                     RandomScorer, RougeLScorer)
+from scorers import (AlignScoreScorer, BERTScoreScorer, LLMJudgeScorer,
+                     MiniCheckScorer, NLIScorer, RandomScorer, RougeLScorer)
 
 # Zero-arg constructors; instantiated one at a time in main() so a heavy
 # model is only loaded while its scorer is running.
@@ -26,6 +26,8 @@ SCORERS = [
     BERTScoreScorer,
     NLIScorer,
     LLMJudgeScorer,
+    MiniCheckScorer,
+    AlignScoreScorer,
 ]
 
 # Named judge variants for the scaling curve.

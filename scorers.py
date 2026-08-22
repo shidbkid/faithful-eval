@@ -246,3 +246,84 @@ class LLMJudgeScorer(Scorer):
     def score(self, source: str, summary: str) -> float:
         claims = _sent_split(summary) or [summary]
         return sum(self._p_yes(source, c) for c in claims) / len(claims)
+
+
+class MiniCheckScorer(Scorer):
+    """MiniCheck (Tang et al., 2024): small model trained for grounding
+    verification. Min over summary sentences, matching NLIScorer."""
+
+    name = "minicheck"
+
+    def __init__(self, model_name: str = "flan-t5-large", device: str = None):
+        from minicheck.minicheck import MiniCheck
+        self._mc = MiniCheck(model_name=model_name,
+                             enable_prefix_caching=False)
+
+    def score(self, source: str, summary: str) -> float:
+        claims = _sent_split(summary) or [summary]
+        docs = [source] * len(claims)
+        _, raw_prob, _, _ = self._mc.score(docs=docs, claims=claims)
+        return min(raw_prob)
+
+
+class AlignScoreScorer(Scorer):
+    """AlignScore (Zha et al., 2023): unified text-alignment scorer."""
+
+    name = "alignscore"
+
+    def __init__(self,
+                 ckpt_path: str = "data/AlignScore-base.ckpt",
+                 model: str = "roberta-base",
+                 device: str = None,
+                 batch_size: int = 32):
+        import torch
+        import torch.nn as nn
+        # AlignScore still does `from transformers import AdamW`, removed in
+        # recent transformers; shim before importing the package.
+        import transformers
+        if not hasattr(transformers, "AdamW"):
+            try:
+                from transformers.optimization import AdamW
+            except ImportError:
+                from torch.optim import AdamW
+            transformers.AdamW = AdamW
+
+        # Newer pytorch-lightning forbids instance.load_from_checkpoint;
+        # AlignScore still uses that pattern — patch Inferencer.__init__.
+        import alignscore.inference as als_inf
+        from alignscore.model import BERTAlignModel
+        from transformers import AutoConfig, AutoTokenizer
+        import spacy
+
+        def _fixed_init(self, ckpt_path, model="bert-base-uncased",
+                        batch_size=32, device="cuda", verbose=True):
+            self.device = device
+            if ckpt_path is not None:
+                self.model = BERTAlignModel.load_from_checkpoint(
+                    checkpoint_path=ckpt_path, strict=False,
+                    model=model).to(self.device)
+            else:
+                self.model = BERTAlignModel(model=model).to(self.device)
+            self.model.eval()
+            self.batch_size = batch_size
+            self.config = AutoConfig.from_pretrained(model)
+            self.tokenizer = AutoTokenizer.from_pretrained(model)
+            self.spacy = spacy.load("en_core_web_sm")
+            self.loss_fct = nn.CrossEntropyLoss(reduction="none")
+            self.softmax = nn.Softmax(dim=-1)
+            self.smart_type = "smart-n"
+            self.smart_n_metric = "f1"
+            self.disable_progress_bar_in_inference = False
+            self.nlg_eval_mode = None
+            self.verbose = verbose
+
+        als_inf.Inferencer.__init__ = _fixed_init
+
+        from alignscore import AlignScore
+        dev = device or ("cuda:0" if torch.cuda.is_available() else "cpu")
+        self._als = AlignScore(model=model, batch_size=batch_size,
+                               device=dev, ckpt_path=ckpt_path,
+                               evaluation_mode="nli_sp")
+
+    def score(self, source: str, summary: str) -> float:
+        return self._als.score(contexts=[source], claims=[summary])[0]
