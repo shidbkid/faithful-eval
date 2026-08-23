@@ -1,0 +1,113 @@
+{
+  "protocol": "IsotonicRegression(score->P(faithful)) fit on fit_set, applied to eval_set. ECE: 10 equal-width bins. Shared scorers only.",
+  "directions": {
+    "ragtruth-summary->tofueval": {
+      "rows": [
+        {
+          "scorer": "rouge-l",
+          "full_auc": 0.7238824101068999,
+          "aurc": 0.2749941659455759,
+          "ece": 0.06355060613843283,
+          "brier": 0.14722053591969772,
+          "failure_mode": "relatively well-calibrated (ordering + probs)"
+        },
+        {
+          "scorer": "bertscore",
+          "full_auc": 0.6968841107871719,
+          "aurc": 0.44501270476957133,
+          "ece": 0.11277904326596279,
+          "brier": 0.1709825480323066,
+          "failure_mode": "both ordering and probability calibration weak"
+        },
+        {
+          "scorer": "nli-deberta",
+          "full_auc": 0.7035759179448177,
+          "aurc": 0.4375519476036783,
+          "ece": 0.09376136107202737,
+          "brier": 0.16673052095300195,
+          "failure_mode": "ordering uninformative (bad AURC)"
+        },
+        {
+          "scorer": "minicheck",
+          "full_auc": 0.8320842312080112,
+          "aurc": 0.39681975208114434,
+          "ece": 0.06011546667220441,
+          "brier": 0.12026212575374293,
+          "failure_mode": "ordering uninformative (bad AURC)"
+        },
+        {
+          "scorer": "alignscore",
+          "full_auc": 0.7849339269869438,
+          "aurc": 0.33758678138739284,
+          "ece": 0.16437250848667273,
+          "brier": 0.1937780756182442,
+          "failure_mode": "ordering OK, probs miscalibrated (bad ECE)"
+        },
+        {
+          "scorer": "llm-judge-3b",
+          "full_auc": 0.7921684201630963,
+          "aurc": 0.34898790064437135,
+          "ece": 0.2583430130436662,
+          "brier": 0.25224544476433086,
+          "failure_mode": "ordering OK, probs miscalibrated (bad ECE)"
+        }
+      ],
+      "median_aurc": 0.3729038263627579,
+      "median_ece": 0.10327020216899507
+    },
+    "tofueval->ragtruth-summary": {
+      "rows": [
+        {
+          "scorer": "rouge-l",
+          "full_auc": 0.6577959488393057,
+          "aurc": 0.35687916112669416,
+          "ece": 0.041345939253485696,
+          "brier": 0.17057970530816347,
+          "failure_mode": "relatively well-calibrated (ordering + probs)"
+        },
+        {
+          "scorer": "bertscore",
+          "full_auc": 0.6400122549019608,
+          "aurc": 0.44823820583345075,
+          "ece": 0.13090113345418797,
+          "brier": 0.18709972960858612,
+          "failure_mode": "both ordering and probability calibration weak"
+        },
+        {
+          "scorer": "nli-deberta",
+          "full_auc": 0.6551125478927203,
+          "aurc": 0.44029980372912836,
+          "ece": 0.11764981158694983,
+          "brier": 0.18110671210999643,
+          "failure_mode": "both ordering and probability calibration weak"
+        },
+        {
+          "scorer": "minicheck",
+          "full_auc": 0.7948747746224927,
+          "aurc": 0.34887126597809337,
+          "ece": 0.08255782268593634,
+          "brier": 0.14270054437401206,
+          "failure_mode": "relatively well-calibrated (ordering + probs)"
+        },
+        {
+          "scorer": "alignscore",
+          "full_auc": 0.7308076966418752,
+          "aurc": 0.42071611442509443,
+          "ece": 0.09581380832266674,
+          "brier": 0.17205834399697414,
+          "failure_mode": "relatively well-calibrated (ordering + probs)"
+        },
+        {
+          "scorer": "llm-judge-3b",
+          "full_auc": 0.7162145030425964,
+          "aurc": 0.44928583502366465,
+          "ece": 0.11779635857486574,
+          "brier": 0.17816553828386703,
+          "failure_mode": "both ordering and probability calibration weak"
+        }
+      ],
+      "median_aurc": 0.43050795907711137,
+      "median_ece": 0.10673180995480828
+    }
+  }
+}
