@@ -174,20 +174,40 @@ class LLMJudgeScorer(Scorer):
 
     name = "llm-judge"
 
-    PROMPT = (
-        "You are verifying a summary claim against a news article.\n\n"
-        "ARTICLE:\n{source}\n\n"
-        "CLAIM:\n{claim}\n\n"
-        "Is the claim fully supported by the article, with no invented or "
-        "contradicted details? Answer with exactly one word, yes or no."
+    # Paraphrase #1 = original. #2/#3 = meaning-preserving rewrites for
+    # prompt-variance experiments (judge_prompt_variance.py).
+    PROMPTS = (
+        (
+            "You are verifying a summary claim against a news article.\n\n"
+            "ARTICLE:\n{source}\n\n"
+            "CLAIM:\n{claim}\n\n"
+            "Is the claim fully supported by the article, with no invented or "
+            "contradicted details? Answer with exactly one word, yes or no."
+        ),
+        (
+            "Check whether this claim is grounded in the article.\n\n"
+            "ARTICLE:\n{source}\n\n"
+            "CLAIM:\n{claim}\n\n"
+            "Does the article fully support the claim without adding or "
+            "altering facts? Reply with exactly one word: yes or no."
+        ),
+        (
+            "Factual consistency check.\n\n"
+            "Source document:\n{source}\n\n"
+            "Summary sentence:\n{claim}\n\n"
+            "Is every part of the summary sentence entailed by the source, "
+            "with nothing fabricated? Answer yes or no only."
+        ),
     )
+    PROMPT = PROMPTS[0]
 
     def __init__(self,
                  model_name: str = None,
                  device: str = None,
                  max_source_chars: int = 6000,
                  name: str = None,
-                 load_in_4bit: bool = False):
+                 load_in_4bit: bool = False,
+                 prompt: str = None):
         import torch
         from transformers import AutoModelForCausalLM, AutoTokenizer
         self.device = device or ("cuda" if torch.cuda.is_available() else "cpu")
@@ -197,6 +217,7 @@ class LLMJudgeScorer(Scorer):
         self.model_name = model_name
         self.name = name or "llm-judge"
         self.max_source_chars = max_source_chars
+        self.PROMPT = prompt if prompt is not None else self.PROMPTS[0]
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)
         if load_in_4bit and self.device == "cuda":
             from transformers import BitsAndBytesConfig

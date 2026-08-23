@@ -224,6 +224,20 @@ size-3 reaches ROUGE-L territory (0.729) on this split. The default size-2
 ranking vs the judge still holds, but the absolute NLI number moves with the
 chunk choice.
 
+### Judge prompt-variance
+
+1.5B judge on RAGTruth Summary (n=900), three meaning-preserving prompt
+paraphrases (original = p1). 7B-4bit skipped (~45–60 min × 3).
+
+| prompt | ROC-AUC | AUC 95% CI | median ms/doc |
+|---|---|---|---|
+| p1 (original) | 0.720 | 0.679–0.761 | 566 |
+| p2 | 0.726 | 0.686–0.770 | 607 |
+| p3 | 0.698 | 0.656–0.740 | 613 |
+
+Min–max spread on 1.5B: **0.029 AUC**. Point estimates stay above NLI (0.655);
+CIs still overlap NLI and each other.
+
 ### What this means
 
 - Clumsy / older hallucinations → ship **NLI**.
