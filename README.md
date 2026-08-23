@@ -249,6 +249,77 @@ CIs still overlap NLI and each other.
 - Fluent LLM **QA** → don't bother with a judge; **ROUGE-L** is best here.
 - One scorer never wins everywhere — measure the task, then pick.
 
+## Do scorers know when they're wrong?
+
+Accuracy ranks scorers by whether they are right. Deployment often needs a
+different property: whether a scorer’s **own confidence** flags its errors
+(selective prediction, cascades, human review). Confidence here is
+`c = |score − t|` (min-max normalized on the eval set), with threshold `t`
+fit on a **different** corpus — never the evaluation examples. Default
+protocol: fit on RAGTruth Summary, evaluate on TofuEval (and the swap).
+Analysis lives in `calibration.py` (saved preds only; no GPU).
+
+### Risk–coverage (fit RT Summary → eval TofuEval)
+
+| scorer | full-set AUC | acc@50% coverage | AURC ↓ | AURC 95% CI |
+|---|---:|---:|---:|---|
+| llm-judge-7b-4bit† | 0.790 | **0.814** | **0.244** | 0.206–0.282 |
+| rouge-l | 0.724 | 0.724 | 0.275 | 0.252–0.298 |
+| llm-judge-1.5b† | 0.728 | 0.739 | 0.301 | 0.265–0.342 |
+| alignscore | 0.785 | 0.648 | 0.338 | 0.323–0.353 |
+| llm-judge-3b | 0.792 | 0.633 | 0.349 | 0.332–0.361 |
+| minicheck | **0.832** | 0.500 | 0.397 | 0.364–0.405 |
+| nli-deberta | 0.704 | 0.500 | 0.438 | — |
+| bertscore | 0.697 | 0.500 | 0.445 | 0.443–0.447 |
+
+† 1.5B / 7B-4bit lack TofuEval preds → seeded 50/50 within-RAGTruth split.
+Caption protocol: threshold fit on fit-set; confidence and metrics on eval-set.
+
+**AUC ranking ≠ AURC ranking** (`rankings_match: false`). MiniCheck leads on
+AUC but sits mid/low on AURC; its top-50% confident slice is no better than
+chance on this transfer (acc@50% = 0.500). Judges and ROUGE-L gate their own
+errors better despite lower full-set AUC. The reverse direction
+(TofuEval → RT Summary) also disagrees on rankings. See
+[`calibration.png`](calibration.png) and `results-calibration.json`.
+
+![Risk–coverage curves](calibration.png)
+
+### Cascade gate sweep (RAGTruth Summary → 7B-4bit)
+
+Same soft-cascade protocol as `cascade.py` (uncertain tertile band, soft-keep
+cheap score); only the cheap gate changes. Imported `soft_cascade` as-is —
+no change to `cascade.py` defaults.
+
+| gate | cascade AUC | mean ms/doc | escalated % | % of 7B AUC | % of 7B latency |
+|---|---:|---:|---:|---:|---:|
+| rouge-l | 0.664 | 403 | 34% | 84% | 34% |
+| nli-deberta | 0.645 | 471 | 34% | 82% | 40% |
+| **minicheck** | **0.784** | 728 | 34% | **100%** | **62%** |
+| alignscore | 0.746 | 495 | 34% | 95% | 42% |
+| llm-judge-1.5b | 0.748 | 597 | 33% | 95% | 51% |
+
+MiniCheck is more accurate than NLI on this data, and as a **gate** the gap
+is larger still: MiniCheck-gated retains ~100% of 7B AUC at 62% latency vs
+NLI-gated 82% at 40% (ΔAUC ≈ +0.139). The 1.5B judge remains a strong
+latency/quality compromise (95% AUC at 51% latency). Accuracy and gating
+quality **do** track for MiniCheck vs NLI on this cascade, even though
+MiniCheck’s cross-dataset risk–coverage self-knowledge is weak. Details:
+`results-cascade-gates.json`.
+
+### Cross-dataset calibration error
+
+Isotonic `score → P(faithful)` fit on one corpus, ECE (10 bins) + Brier on
+the other (`results-ece.json`). Two failure modes show up:
+
+- **Accurate but ordering-uninformative:** MiniCheck / NLI on RT→TF (good or
+  middling AUC, bad AURC; MiniCheck ECE is actually fine after isotonic).
+- **Ordering OK, probs miscalibrated:** AlignScore and 3B judge on RT→TF
+  (usable AURC, high ECE).
+- **Relatively well-calibrated:** ROUGE-L on both directions.
+
+So accuracy, selective-prediction self-knowledge, and probability calibration
+are separable properties — pick the metric that matches the deployment use.
+
 ## Benchmark
 
 Three datasets, same scorer interface. Pick with `--dataset`:
