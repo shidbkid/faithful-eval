@@ -102,13 +102,15 @@ class NLIScorer(Scorer):
                  model_name: str = "MoritzLaurer/DeBERTa-v3-base-mnli-fever-anli",
                  device: str = None,
                  batch_size: int = 32,
-                 max_length: int = 512):
+                 max_length: int = 512,
+                 chunk_size: int = 2):
         import torch
         from transformers import (AutoModelForSequenceClassification,
                                   AutoTokenizer)
         self.device = device or ("cuda" if torch.cuda.is_available() else "cpu")
         self.batch_size = batch_size
         self.max_length = max_length
+        self.chunk_size = max(1, int(chunk_size))
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)
         self.model = AutoModelForSequenceClassification.from_pretrained(
             model_name).to(self.device).eval()
@@ -117,6 +119,8 @@ class NLIScorer(Scorer):
         self.entail_idx = next(
             i for i, lbl in self.model.config.id2label.items()
             if lbl.lower().startswith("entail"))
+        if self.chunk_size != 2:
+            self.name = f"nli-deberta-chunk{self.chunk_size}"
 
     def _entail_probs(self, pairs):
         """pairs: list of (premise, hypothesis) -> list of P(entailment)."""
@@ -138,10 +142,14 @@ class NLIScorer(Scorer):
 
     def score(self, source: str, summary: str) -> float:
         src_sents = _sent_split(source)
-        # Overlapping 2-sentence chunks so claims supported across a
-        # sentence boundary still find their evidence.
-        chunks = [" ".join(src_sents[i:i + 2])
-                  for i in range(max(1, len(src_sents) - 1))]
+        # Overlapping chunk_size-sentence chunks (default 2) so claims
+        # supported across a sentence boundary still find their evidence.
+        cs = self.chunk_size
+        if len(src_sents) <= cs:
+            chunks = [" ".join(src_sents)] if src_sents else [source]
+        else:
+            chunks = [" ".join(src_sents[i:i + cs])
+                      for i in range(len(src_sents) - cs + 1)]
         claims = _sent_split(summary) or [summary]
 
         pairs = [(c, claim) for claim in claims for c in chunks]

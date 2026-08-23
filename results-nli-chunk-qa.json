@@ -1,0 +1,41 @@
+[
+  {
+    "scorer": "nli-deberta-chunk1",
+    "spearman": 0.13797529131451958,
+    "balanced_acc": 0.5842905405405405,
+    "roc_auc": 0.6036275337837838,
+    "roc_auc_ci": [
+      0.5541,
+      0.6517
+    ],
+    "median_latency_ms": 51.830350000045655,
+    "peak_vram_gb": 0.88425216,
+    "n": 900
+  },
+  {
+    "scorer": "nli-deberta",
+    "spearman": 0.25078757212933045,
+    "balanced_acc": 0.6427364864864865,
+    "roc_auc": 0.6889907094594594,
+    "roc_auc_ci": [
+      0.6429,
+      0.7324
+    ],
+    "median_latency_ms": 62.47725000002902,
+    "peak_vram_gb": 0.952175104,
+    "n": 900
+  },
+  {
+    "scorer": "nli-deberta-chunk3",
+    "spearman": 0.3094567252682678,
+    "balanced_acc": 0.684206081081081,
+    "roc_auc": 0.7334206081081082,
+    "roc_auc_ci": [
+      0.6887,
+      0.7777
+    ],
+    "median_latency_ms": 71.00745000002462,
+    "peak_vram_gb": 1.26956288,
+    "n": 900
+  }
+]
