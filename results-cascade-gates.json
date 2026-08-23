@@ -1,0 +1,126 @@
+{
+  "protocol": "RAGTruth Summary; soft_cascade from cascade.py (uncertain tertile band, soft-keep cheap score); target=llm-judge-7b-4bit. No change to cascade.py defaults.",
+  "rows": [
+    {
+      "gate": "rouge-l",
+      "policy": "rouge-l -> mid-band llm-judge-7b-4bit (soft-keep)",
+      "roc_auc": 0.6637895819247238,
+      "roc_auc_ci": [
+        0.62169768491872,
+        0.7068588287587321
+      ],
+      "mean_latency_ms": 402.7691474882886,
+      "escalated_frac": 0.3388888888888889,
+      "band": [
+        0.7692307692307693,
+        0.8470302445302446
+      ],
+      "auc_ratio_vs_7b": 0.8446857327226935,
+      "latency_ratio_vs_7b": 0.3430632438775657,
+      "target_auc": 0.7858420667117423,
+      "target_latency_ms": 1174.0375999943353,
+      "stage_frac": {
+        "rouge-l": 0.6611111111111111,
+        "llm-judge-7b-4bit": 0.3388888888888889
+      }
+    },
+    {
+      "gate": "nli-deberta",
+      "policy": "nli-deberta -> mid-band llm-judge-7b-4bit (soft-keep)",
+      "roc_auc": 0.6447909623619563,
+      "roc_auc_ci": [
+        0.6027579610659469,
+        0.6854062026612594
+      ],
+      "mean_latency_ms": 471.0753950185608,
+      "escalated_frac": 0.34,
+      "band": [
+        0.01042694091796875,
+        0.06864074707031254
+      ],
+      "auc_ratio_vs_7b": 0.8205096032336413,
+      "latency_ratio_vs_7b": 0.4012438741492042,
+      "target_auc": 0.7858420667117423,
+      "target_latency_ms": 1174.0375999943353,
+      "stage_frac": {
+        "llm-judge-7b-4bit": 0.34,
+        "nli-deberta": 0.66
+      }
+    },
+    {
+      "gate": "minicheck",
+      "policy": "minicheck -> mid-band llm-judge-7b-4bit (soft-keep)",
+      "roc_auc": 0.7837960615280595,
+      "roc_auc_ci": [
+        0.7448729277533372,
+        0.8236803974365183
+      ],
+      "mean_latency_ms": 728.3411509981215,
+      "escalated_frac": 0.34,
+      "band": [
+        0.14197490528225898,
+        0.9032355016469956
+      ],
+      "auc_ratio_vs_7b": 0.9973964168242557,
+      "latency_ratio_vs_7b": 0.6203729343946358,
+      "target_auc": 0.7858420667117423,
+      "target_latency_ms": 1174.0375999943353,
+      "stage_frac": {
+        "llm-judge-7b-4bit": 0.34,
+        "minicheck": 0.66
+      }
+    },
+    {
+      "gate": "alignscore",
+      "policy": "alignscore -> mid-band llm-judge-7b-4bit (soft-keep)",
+      "roc_auc": 0.7459502479152581,
+      "roc_auc_ci": [
+        0.7065389710506258,
+        0.7854708887973296
+      ],
+      "mean_latency_ms": 495.1643059982189,
+      "escalated_frac": 0.34,
+      "band": [
+        0.6979091119766235,
+        0.8664639288187027
+      ],
+      "auc_ratio_vs_7b": 0.9492368498884178,
+      "latency_ratio_vs_7b": 0.4217618805399487,
+      "target_auc": 0.7858420667117423,
+      "target_latency_ms": 1174.0375999943353,
+      "stage_frac": {
+        "alignscore": 0.66,
+        "llm-judge-7b-4bit": 0.34
+      }
+    },
+    {
+      "gate": "llm-judge-1.5b",
+      "policy": "llm-judge-1.5b -> mid-band llm-judge-7b-4bit (soft-keep)",
+      "roc_auc": 0.7484892663962135,
+      "roc_auc_ci": [
+        0.707227063640959,
+        0.7870431283337372
+      ],
+      "mean_latency_ms": 596.6238449976986,
+      "escalated_frac": 0.3322222222222222,
+      "band": [
+        0.9720052083333334,
+        0.9967447916666666
+      ],
+      "auc_ratio_vs_7b": 0.9524678025041,
+      "latency_ratio_vs_7b": 0.5081812073144653,
+      "target_auc": 0.7858420667117423,
+      "target_latency_ms": 1174.0375999943353,
+      "stage_frac": {
+        "llm-judge-7b-4bit": 0.3322222222222222,
+        "llm-judge-1.5b": 0.6677777777777778
+      }
+    }
+  ],
+  "comparison": {
+    "minicheck_auc": 0.7837960615280595,
+    "nli_auc": 0.6447909623619563,
+    "judge_1.5b_auc": 0.7484892663962135,
+    "minicheck_minus_nli": 0.13900509916610315
+  }
+}
