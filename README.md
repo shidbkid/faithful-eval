@@ -208,6 +208,22 @@ LLM-era sets** (non-overlapping CIs vs NLI on RAGTruth and TofuEval). AlignScore
 also beats NLI on the LLM-era sets, though MiniCheck leads. Specialized cheap
 detectors do not collapse the way zero-shot DeBERTa NLI does on fluent LLM text.
 
+### NLI chunk-size sensitivity (QA)
+
+RAGTruth QA only (n=900). Overlapping source chunks of 1 / 2 (default) / 3
+sentences. Optional `NLIScorer(chunk_size=…)` — default unchanged.
+
+| chunk_size | scorer | ROC-AUC | AUC 95% CI | median ms/doc |
+|---:|---|---|---|---|
+| 1 | nli-deberta-chunk1 | 0.604 | 0.554–0.652 | 52 |
+| 2 | nli-deberta (default) | 0.689 | 0.643–0.732 | 62 |
+| 3 | nli-deberta-chunk3 | **0.733** | 0.689–0.778 | 71 |
+
+NLI’s QA result is **not** fully robust to chunking: size-1 is clearly worse;
+size-3 reaches ROUGE-L territory (0.729) on this split. The default size-2
+ranking vs the judge still holds, but the absolute NLI number moves with the
+chunk choice.
+
 ### What this means
 
 - Clumsy / older hallucinations → ship **NLI**.
