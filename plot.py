@@ -26,6 +26,8 @@ COLORS = {
     "bertscore": "#eb6834",
     "nli-deberta": "#1baf7a",
     "llm-judge": "#4a3aa7",
+    "minicheck": "#c45c26",
+    "alignscore": "#0e8a9a",
 }
 FALLBACK = "#e87ba4"
 
@@ -157,15 +159,22 @@ def scale_curve(judge_rows, nli_auc, outfile):
 
 def main():
     rows = json.load(open("results.json"))
+    if os.path.exists("results-newscorers-summeval.json"):
+        rows = rows + json.load(open("results-newscorers-summeval.json"))
     scatter(rows, "results.png",
             "Faithfulness scoring: quality vs cost (SummEval, n=1600)")
     table(rows, "SummEval (2019-era summaries, n=1600)")
 
     if os.path.exists("results-ragtruth.json"):
         rt = json.load(open("results-ragtruth.json"))
+        if os.path.exists("results-newscorers-ragtruth.json"):
+            rt = rt + json.load(open("results-newscorers-ragtruth.json"))
         scatter(rt, "results-ragtruth.png",
                 "Quality vs cost (RAGTruth summaries)")
-        slope(rows, rt, "SummEval\n(2019-era)", "RAGTruth\n(LLM-era)",
+        # Slope chart keeps the original shared scorers only (era flip).
+        slope(json.load(open("results.json")),
+              json.load(open("results-ragtruth.json")),
+              "SummEval\n(2019-era)", "RAGTruth\n(LLM-era)",
               "comparison.png")
         table(rt, "RAGTruth (LLM-era summaries)")
 
