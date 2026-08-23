@@ -188,13 +188,34 @@ The cascade that *does* approach 7B quality is judge→judge on Summary:
 
 Ceiling is high; the cheap gate has to be a smaller judge, not NLI.
 
+### Specialized cheap detectors (MiniCheck, AlignScore)
+
+Trained grounding metrics as drop-in scorers (`minicheck`, `alignscore`), same
+interface and hardware. New result files only — existing tables unchanged.
+
+| scorer | dataset | ROC-AUC | AUC 95% CI | median ms/doc | peak VRAM (GB) |
+|---|---|---|---|---|---|
+| minicheck | SummEval | 0.791 | 0.756–0.825 | 267 | 3.5 |
+| alignscore | SummEval | 0.714 | 0.680–0.746 | 77 | 2.6 |
+| minicheck | RAGTruth Summary | **0.795** | 0.759–0.831 | 499 | 3.8 |
+| alignscore | RAGTruth Summary | 0.731 | 0.692–0.767 | 145 | 7.4 |
+| minicheck | TofuEval | **0.832** | 0.806–0.858 | 231 | 3.6 |
+| alignscore | TofuEval | 0.785 | 0.756–0.814 | 53 | 1.5 |
+
+Generic NLI on the same splits: SummEval 0.786, RAGTruth Summary **0.655**,
+TofuEval **0.704**. MiniCheck matches NLI on SummEval and **clears it on both
+LLM-era sets** (non-overlapping CIs vs NLI on RAGTruth and TofuEval). AlignScore
+also beats NLI on the LLM-era sets, though MiniCheck leads. Specialized cheap
+detectors do not collapse the way zero-shot DeBERTa NLI does on fluent LLM text.
+
 ### What this means
 
 - Clumsy / older hallucinations → ship **NLI**.
 - Fluent LLM **summaries** (RAGTruth + TofuEval) and **data-to-text** → a
   local judge pays off; on TofuEval **3B is already solid**, on RAGTruth
   Summary **1.5B leads / 7B-4bit decides**. Want most of 7B quality cheaper
-  → **1.5B→7B cascade**, not NLI→judge.
+  → **1.5B→7B cascade**, not NLI→judge. **MiniCheck** is a strong cheap
+  alternative that holds on LLM-era summaries where generic NLI fails.
 - Fluent LLM **QA** → don't bother with a judge; **ROUGE-L** is best here.
 - One scorer never wins everywhere — measure the task, then pick.
 

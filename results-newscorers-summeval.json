@@ -1,0 +1,28 @@
+[
+  {
+    "scorer": "minicheck",
+    "spearman": 0.4130120623114203,
+    "balanced_acc": 0.7608656019835193,
+    "roc_auc": 0.7913762748591013,
+    "roc_auc_ci": [
+      0.7562,
+      0.8245
+    ],
+    "median_latency_ms": 266.71699999997145,
+    "peak_vram_gb": 3.485740544,
+    "n": 1600
+  },
+  {
+    "scorer": "alignscore",
+    "spearman": 0.30305715515683257,
+    "balanced_acc": 0.667257867925118,
+    "roc_auc": 0.7140356908460168,
+    "roc_auc_ci": [
+      0.6803,
+      0.7456
+    ],
+    "median_latency_ms": 77.4373999998943,
+    "peak_vram_gb": 2.575872,
+    "n": 1600
+  }
+]
