@@ -1,0 +1,181 @@
+{
+  "protocol": "t_A = threshold fit on dataset A; t_B = oracle threshold on B. Apply both to B's scores. transfer_penalty = bal_acc(t_B) - bal_acc(t_A) (positive = A-threshold hurts).",
+  "rows": [
+    {
+      "scorer": "rouge-l",
+      "direction": "ragtruth-summary->tofueval",
+      "t_A": 0.8316831683168316,
+      "t_B": 0.7333333333333333,
+      "pct_pos_under_tA": 0.568090787716956,
+      "pct_pos_under_tB": 0.7716955941255007,
+      "bal_acc_under_tA": 0.6481994971901804,
+      "bal_acc_under_tB": 0.6789781129843242,
+      "transfer_penalty": 0.03077861579414376
+    },
+    {
+      "scorer": "bertscore",
+      "direction": "ragtruth-summary->tofueval",
+      "t_A": 0.9139113426208496,
+      "t_B": 0.8656984567642212,
+      "pct_pos_under_tA": 0.07409879839786382,
+      "pct_pos_under_tB": 0.6088117489986649,
+      "bal_acc_under_tA": 0.5353260869565217,
+      "bal_acc_under_tB": 0.6741348713398403,
+      "transfer_penalty": 0.13880878438331856
+    },
+    {
+      "scorer": "nli-deberta",
+      "direction": "ragtruth-summary->tofueval",
+      "t_A": 0.033294677734375,
+      "t_B": 0.5888671875,
+      "pct_pos_under_tA": 0.8484646194926568,
+      "pct_pos_under_tB": 0.45260347129506007,
+      "bal_acc_under_tA": 0.5676574977817214,
+      "bal_acc_under_tB": 0.6715653652765454,
+      "transfer_penalty": 0.10390786749482406
+    },
+    {
+      "scorer": "minicheck",
+      "direction": "ragtruth-summary->tofueval",
+      "t_A": 0.22596488893032074,
+      "t_B": 0.6547017097473145,
+      "pct_pos_under_tA": 0.7850467289719626,
+      "pct_pos_under_tB": 0.7323097463284379,
+      "bal_acc_under_tA": 0.7468204673173617,
+      "bal_acc_under_tB": 0.7587252292221236,
+      "transfer_penalty": 0.011904761904761862
+    },
+    {
+      "scorer": "alignscore",
+      "direction": "ragtruth-summary->tofueval",
+      "t_A": 0.7829781174659729,
+      "t_B": 0.47133222222328186,
+      "pct_pos_under_tA": 0.48998664886515353,
+      "pct_pos_under_tB": 0.6682242990654206,
+      "bal_acc_under_tA": 0.6953748890860693,
+      "bal_acc_under_tB": 0.7297766932860101,
+      "transfer_penalty": 0.03440180419994088
+    },
+    {
+      "scorer": "llm-judge-1.5b",
+      "direction": "ragtruth-summary->tofueval",
+      "t_A": 0.978125,
+      "t_B": 0.9609375,
+      "pct_pos_under_tA": 0.650200267022697,
+      "pct_pos_under_tB": 0.7109479305740988,
+      "bal_acc_under_tA": 0.6886276249630288,
+      "bal_acc_under_tB": 0.7016045548654244,
+      "transfer_penalty": 0.012976929902395629
+    },
+    {
+      "scorer": "llm-judge-3b",
+      "direction": "ragtruth-summary->tofueval",
+      "t_A": 0.5554475388489664,
+      "t_B": 0.06005859375,
+      "pct_pos_under_tA": 0.4732977303070761,
+      "pct_pos_under_tB": 0.6395193591455274,
+      "bal_acc_under_tA": 0.6867236024844721,
+      "bal_acc_under_tB": 0.7174282756580893,
+      "transfer_penalty": 0.030704673173617247
+    },
+    {
+      "scorer": "llm-judge-7b-4bit",
+      "direction": "ragtruth-summary->tofueval",
+      "t_A": 0.9,
+      "t_B": 0.9921875,
+      "pct_pos_under_tA": 0.7583444592790387,
+      "pct_pos_under_tB": 0.6955941255006676,
+      "bal_acc_under_tA": 0.741681455190772,
+      "bal_acc_under_tB": 0.7472086660751257,
+      "transfer_penalty": 0.005527210884353706
+    },
+    {
+      "scorer": "rouge-l",
+      "direction": "tofueval->ragtruth-summary",
+      "t_A": 0.7333333333333333,
+      "t_B": 0.8316831683168316,
+      "pct_pos_under_tA": 0.8088888888888889,
+      "pct_pos_under_tB": 0.4,
+      "bal_acc_under_tA": 0.5761071670047329,
+      "bal_acc_under_tB": 0.638184584178499,
+      "transfer_penalty": 0.062077417173766136
+    },
+    {
+      "scorer": "bertscore",
+      "direction": "tofueval->ragtruth-summary",
+      "t_A": 0.8656984567642212,
+      "t_B": 0.9139113426208496,
+      "pct_pos_under_tA": 0.9344444444444444,
+      "pct_pos_under_tB": 0.3566666666666667,
+      "bal_acc_under_tA": 0.5114942528735632,
+      "bal_acc_under_tB": 0.6323529411764706,
+      "transfer_penalty": 0.12085868830290736
+    },
+    {
+      "scorer": "nli-deberta",
+      "direction": "tofueval->ragtruth-summary",
+      "t_A": 0.5888671875,
+      "t_B": 0.033294677734375,
+      "pct_pos_under_tA": 0.13333333333333333,
+      "pct_pos_under_tB": 0.4388888888888889,
+      "bal_acc_under_tA": 0.5545131845841784,
+      "bal_acc_under_tB": 0.6189570655848546,
+      "transfer_penalty": 0.06444388100067622
+    },
+    {
+      "scorer": "minicheck",
+      "direction": "tofueval->ragtruth-summary",
+      "t_A": 0.6547017097473145,
+      "t_B": 0.22596488893032074,
+      "pct_pos_under_tA": 0.47888888888888886,
+      "pct_pos_under_tB": 0.6144444444444445,
+      "bal_acc_under_tA": 0.7082065584854631,
+      "bal_acc_under_tB": 0.7324628127112914,
+      "transfer_penalty": 0.024256254225828333
+    },
+    {
+      "scorer": "alignscore",
+      "direction": "tofueval->ragtruth-summary",
+      "t_A": 0.47133222222328186,
+      "t_B": 0.7829781174659729,
+      "pct_pos_under_tA": 0.9366666666666666,
+      "pct_pos_under_tB": 0.4888888888888889,
+      "bal_acc_under_tA": 0.5573022312373225,
+      "bal_acc_under_tB": 0.6829783637592968,
+      "transfer_penalty": 0.1256761325219743
+    },
+    {
+      "scorer": "llm-judge-1.5b",
+      "direction": "tofueval->ragtruth-summary",
+      "t_A": 0.9609375,
+      "t_B": 0.978125,
+      "pct_pos_under_tA": 0.72,
+      "pct_pos_under_tB": 0.62,
+      "bal_acc_under_tA": 0.6422413793103448,
+      "bal_acc_under_tB": 0.6694979716024341,
+      "transfer_penalty": 0.02725659229208932
+    },
+    {
+      "scorer": "llm-judge-3b",
+      "direction": "tofueval->ragtruth-summary",
+      "t_A": 0.06005859375,
+      "t_B": 0.5554475388489664,
+      "pct_pos_under_tA": 0.9877777777777778,
+      "pct_pos_under_tB": 0.6211111111111111,
+      "bal_acc_under_tA": 0.5142832995267073,
+      "bal_acc_under_tB": 0.6607082488167682,
+      "transfer_penalty": 0.1464249492900609
+    },
+    {
+      "scorer": "llm-judge-7b-4bit",
+      "direction": "tofueval->ragtruth-summary",
+      "t_A": 0.9921875,
+      "t_B": 0.9,
+      "pct_pos_under_tA": 0.5511111111111111,
+      "pct_pos_under_tB": 0.6733333333333333,
+      "bal_acc_under_tA": 0.716869506423259,
+      "bal_acc_under_tB": 0.738843813387424,
+      "transfer_penalty": 0.021974306964165025
+    }
+  ]
+}
