@@ -1,0 +1,28 @@
+[
+  {
+    "scorer": "llm-judge-1.5b",
+    "spearman": 0.3764564910502896,
+    "balanced_acc": 0.7016045548654244,
+    "roc_auc": 0.7545778404529513,
+    "roc_auc_ci": [
+      0.7211,
+      0.7857
+    ],
+    "median_latency_ms": 118.04900000061025,
+    "peak_vram_gb": 3.566122496,
+    "n": 1498
+  },
+  {
+    "scorer": "llm-judge-7b-4bit",
+    "spearman": 0.49224207016447835,
+    "balanced_acc": 0.7472086660751257,
+    "roc_auc": 0.7945543900790131,
+    "roc_auc_ci": [
+      0.7661,
+      0.8244
+    ],
+    "median_latency_ms": 417.18699999910314,
+    "peak_vram_gb": 6.58587136,
+    "n": 1498
+  }
+]
