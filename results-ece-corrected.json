@@ -1,0 +1,215 @@
+{
+  "protocol": "IN: isotonic fit on CV train folds, predict on held-out; concat OOF probs -> ECE/Brier. SHIFT: isotonic fit on A, apply to B. Degeneracy not applicable to ECE. Old results-ece.json retained; this file supersedes it.",
+  "IN": {
+    "ragtruth-summary": {
+      "rows": [
+        {
+          "scorer": "rouge-l",
+          "ece": 0.015127634494446558,
+          "brier": 0.1663834715586524,
+          "full_auc": 0.6577959488393057
+        },
+        {
+          "scorer": "bertscore",
+          "ece": 0.024559104083727364,
+          "brier": 0.17100018931306696,
+          "full_auc": 0.6400122549019608
+        },
+        {
+          "scorer": "nli-deberta",
+          "ece": 0.01649339148096771,
+          "brier": 0.16746592497175766,
+          "full_auc": 0.6551125478927203
+        },
+        {
+          "scorer": "minicheck",
+          "ece": 0.020993367000594412,
+          "brier": 0.1369613827557349,
+          "full_auc": 0.7948747746224927
+        },
+        {
+          "scorer": "alignscore",
+          "ece": 0.017216604446871786,
+          "brier": 0.1584722477089854,
+          "full_auc": 0.7308076966418752
+        },
+        {
+          "scorer": "llm-judge-1.5b",
+          "ece": 0.03246098197391655,
+          "brier": 0.15866905579538532,
+          "full_auc": 0.7197853279242732
+        },
+        {
+          "scorer": "llm-judge-3b",
+          "ece": 0.01608254267981516,
+          "brier": 0.1590746466141025,
+          "full_auc": 0.7162145030425964
+        },
+        {
+          "scorer": "llm-judge-7b-4bit",
+          "ece": 0.032264553901292375,
+          "brier": 0.14255759767142676,
+          "full_auc": 0.7858420667117423
+        }
+      ]
+    },
+    "tofueval": {
+      "rows": [
+        {
+          "scorer": "rouge-l",
+          "ece": 0.017270344020859488,
+          "brier": 0.14131206397822219,
+          "full_auc": 0.7238824101068999
+        },
+        {
+          "scorer": "bertscore",
+          "ece": 0.02022722031065999,
+          "brier": 0.15463248422241277,
+          "full_auc": 0.6968841107871719
+        },
+        {
+          "scorer": "nli-deberta",
+          "ece": 0.017913131133016583,
+          "brier": 0.15542683237155996,
+          "full_auc": 0.7035759179448177
+        },
+        {
+          "scorer": "minicheck",
+          "ece": 0.014516169212119205,
+          "brier": 0.11731372861753848,
+          "full_auc": 0.8320842312080112
+        },
+        {
+          "scorer": "alignscore",
+          "ece": 0.016838228437387415,
+          "brier": 0.13698274225751228,
+          "full_auc": 0.7849339269869438
+        },
+        {
+          "scorer": "llm-judge-1.5b",
+          "ece": 0.01049687619955238,
+          "brier": 0.13660985806825096,
+          "full_auc": 0.7545778404529513
+        },
+        {
+          "scorer": "llm-judge-3b",
+          "ece": 0.013036712286879203,
+          "brier": 0.12385931253995393,
+          "full_auc": 0.7921684201630963
+        },
+        {
+          "scorer": "llm-judge-7b-4bit",
+          "ece": 0.015449579756336616,
+          "brier": 0.11817359128315968,
+          "full_auc": 0.7945543900790131
+        }
+      ]
+    }
+  },
+  "SHIFT": {
+    "ragtruth-summary->tofueval": {
+      "rows": [
+        {
+          "scorer": "rouge-l",
+          "ece": 0.06355060613843283,
+          "brier": 0.14722053591969772,
+          "full_auc": 0.7238824101068999
+        },
+        {
+          "scorer": "bertscore",
+          "ece": 0.11277904326596279,
+          "brier": 0.1709825480323066,
+          "full_auc": 0.6968841107871719
+        },
+        {
+          "scorer": "nli-deberta",
+          "ece": 0.09376136107202737,
+          "brier": 0.16673052095300195,
+          "full_auc": 0.7035759179448177
+        },
+        {
+          "scorer": "minicheck",
+          "ece": 0.06011546667220441,
+          "brier": 0.12026212575374293,
+          "full_auc": 0.8320842312080112
+        },
+        {
+          "scorer": "alignscore",
+          "ece": 0.16437250848667273,
+          "brier": 0.1937780756182442,
+          "full_auc": 0.7849339269869438
+        },
+        {
+          "scorer": "llm-judge-1.5b",
+          "ece": 0.0713033925456754,
+          "brier": 0.1492185904757523,
+          "full_auc": 0.7545778404529513
+        },
+        {
+          "scorer": "llm-judge-3b",
+          "ece": 0.2583430130436662,
+          "brier": 0.25224544476433086,
+          "full_auc": 0.7921684201630963
+        },
+        {
+          "scorer": "llm-judge-7b-4bit",
+          "ece": 0.10879998637305677,
+          "brier": 0.16375293633651938,
+          "full_auc": 0.7945543900790131
+        }
+      ]
+    },
+    "tofueval->ragtruth-summary": {
+      "rows": [
+        {
+          "scorer": "rouge-l",
+          "ece": 0.041345939253485696,
+          "brier": 0.17057970530816347,
+          "full_auc": 0.6577959488393057
+        },
+        {
+          "scorer": "bertscore",
+          "ece": 0.13090113345418797,
+          "brier": 0.18709972960858612,
+          "full_auc": 0.6400122549019608
+        },
+        {
+          "scorer": "nli-deberta",
+          "ece": 0.11764981158694983,
+          "brier": 0.18110671210999643,
+          "full_auc": 0.6551125478927203
+        },
+        {
+          "scorer": "minicheck",
+          "ece": 0.08255782268593634,
+          "brier": 0.14270054437401206,
+          "full_auc": 0.7948747746224927
+        },
+        {
+          "scorer": "alignscore",
+          "ece": 0.09581380832266674,
+          "brier": 0.17205834399697414,
+          "full_auc": 0.7308076966418752
+        },
+        {
+          "scorer": "llm-judge-1.5b",
+          "ece": 0.05097328752145225,
+          "brier": 0.15932655969127715,
+          "full_auc": 0.7197853279242732
+        },
+        {
+          "scorer": "llm-judge-3b",
+          "ece": 0.11779635857486574,
+          "brier": 0.17816553828386703,
+          "full_auc": 0.7162145030425964
+        },
+        {
+          "scorer": "llm-judge-7b-4bit",
+          "ece": 0.06977591368799302,
+          "brier": 0.15706458555501965,
+          "full_auc": 0.7858420667117423
+        }
+      ]
+    }
+  }
+}
