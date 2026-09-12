@@ -1,0 +1,149 @@
+{
+  "protocol": "Per-example preds aligned by binary-label order (asserted against data.load*). llm-judge aliased to llm-judge-3b.",
+  "wanted": [
+    "rouge-l",
+    "bertscore",
+    "nli-deberta",
+    "minicheck",
+    "alignscore",
+    "llm-judge-0.5b",
+    "llm-judge-1.5b",
+    "llm-judge-3b",
+    "llm-judge-7b-4bit"
+  ],
+  "matrix": {
+    "ragtruth-summary": {
+      "n": 900,
+      "task": "Summary",
+      "scorers": [
+        "alignscore",
+        "bertscore",
+        "llm-judge-0.5b",
+        "llm-judge-1.5b",
+        "llm-judge-3b",
+        "llm-judge-7b-4bit",
+        "minicheck",
+        "nli-deberta",
+        "rouge-l"
+      ],
+      "extra": [
+        "random"
+      ],
+      "n_scorers": 9
+    },
+    "ragtruth-qa": {
+      "n": 900,
+      "task": "QA",
+      "scorers": [
+        "bertscore",
+        "llm-judge-3b",
+        "llm-judge-7b-4bit",
+        "nli-deberta",
+        "rouge-l"
+      ],
+      "extra": [
+        "random"
+      ],
+      "n_scorers": 5
+    },
+    "ragtruth-d2t": {
+      "n": 900,
+      "task": "Data2txt",
+      "scorers": [
+        "bertscore",
+        "llm-judge-3b",
+        "nli-deberta",
+        "rouge-l"
+      ],
+      "extra": [
+        "random"
+      ],
+      "n_scorers": 4
+    },
+    "tofueval": {
+      "n": 1498,
+      "task": "Dialogue",
+      "scorers": [
+        "alignscore",
+        "bertscore",
+        "llm-judge-1.5b",
+        "llm-judge-3b",
+        "llm-judge-7b-4bit",
+        "minicheck",
+        "nli-deberta",
+        "rouge-l"
+      ],
+      "extra": [
+        "random"
+      ],
+      "n_scorers": 8
+    },
+    "summeval": {
+      "n": 1600,
+      "task": "SummEval",
+      "scorers": [
+        "alignscore",
+        "minicheck"
+      ],
+      "extra": [],
+      "n_scorers": 2
+    }
+  },
+  "pairwise_intersection": {
+    "ragtruth-summary\u2229ragtruth-qa": [
+      "bertscore",
+      "llm-judge-3b",
+      "llm-judge-7b-4bit",
+      "nli-deberta",
+      "rouge-l"
+    ],
+    "ragtruth-summary\u2229ragtruth-d2t": [
+      "bertscore",
+      "llm-judge-3b",
+      "nli-deberta",
+      "rouge-l"
+    ],
+    "ragtruth-summary\u2229tofueval": [
+      "alignscore",
+      "bertscore",
+      "llm-judge-1.5b",
+      "llm-judge-3b",
+      "llm-judge-7b-4bit",
+      "minicheck",
+      "nli-deberta",
+      "rouge-l"
+    ],
+    "ragtruth-summary\u2229summeval": [
+      "alignscore",
+      "minicheck"
+    ],
+    "ragtruth-qa\u2229ragtruth-d2t": [
+      "bertscore",
+      "llm-judge-3b",
+      "nli-deberta",
+      "rouge-l"
+    ],
+    "ragtruth-qa\u2229tofueval": [
+      "bertscore",
+      "llm-judge-3b",
+      "llm-judge-7b-4bit",
+      "nli-deberta",
+      "rouge-l"
+    ],
+    "ragtruth-qa\u2229summeval": [],
+    "ragtruth-d2t\u2229tofueval": [
+      "bertscore",
+      "llm-judge-3b",
+      "nli-deberta",
+      "rouge-l"
+    ],
+    "ragtruth-d2t\u2229summeval": [],
+    "tofueval\u2229summeval": [
+      "alignscore",
+      "minicheck"
+    ]
+  },
+  "notes": [
+    "summeval: base scorers (rouge-l/bertscore/nli/judge) have aggregate results.json but NO *.preds.json \u2014 only minicheck/alignscore preds exist. Excluded from stacking leave-one-out that needs the full score vector."
+  ]
+}
