@@ -1,0 +1,172 @@
+{
+  "protocol": "Paired bootstrap of AUC(A)-AUC(B), 10000 resamples, same example indices for both systems. Models fit once on the fit corpus; bootstrap only the eval-set metric difference. frac_diff_le_zero = bootstrap p-value for H0: diff<=0 (one-sided toward A>B).",
+  "n_boot": 10000,
+  "directions": {
+    "ragtruth-summary->tofueval": {
+      "best_stack_name": "stack_lr",
+      "scorers_used": [
+        "rouge-l",
+        "bertscore",
+        "nli-deberta",
+        "minicheck",
+        "alignscore",
+        "llm-judge-1.5b",
+        "llm-judge-3b",
+        "llm-judge-7b-4bit"
+      ],
+      "rows": [
+        {
+          "comparison": "stack-LR vs MiniCheck",
+          "system_a": "stack_lr",
+          "system_b": "minicheck",
+          "point_diff": 0.014707979465077958,
+          "mean_boot_diff": 0.01464230763110803,
+          "diff_ci_95": [
+            -0.005192295182149833,
+            0.0347790697390411
+          ],
+          "frac_diff_le_zero": 0.0795,
+          "ci_excludes_zero": false,
+          "n_boot_kept": 10000,
+          "auc_a": 0.8467922106730892,
+          "auc_b": 0.8320842312080112,
+          "verdict": "not significant (CI includes 0)"
+        },
+        {
+          "comparison": "stack-LR vs MiniCheck\u21927B cascade",
+          "system_a": "stack_lr",
+          "system_b": "cascade",
+          "point_diff": 0.045400769003253405,
+          "mean_boot_diff": 0.04528149502193517,
+          "diff_ci_95": [
+            0.025878340291280052,
+            0.06503727312376202
+          ],
+          "frac_diff_le_zero": 0.0,
+          "ci_excludes_zero": true,
+          "n_boot_kept": 10000,
+          "auc_a": 0.8467922106730892,
+          "auc_b": 0.8013914416698358,
+          "verdict": "significant (CI excludes 0)"
+        },
+        {
+          "comparison": "stack-GBM vs stack-LR",
+          "system_a": "stack_gbm",
+          "system_b": "stack_lr",
+          "point_diff": -0.010491929691131108,
+          "mean_boot_diff": -0.010470904105512444,
+          "diff_ci_95": [
+            -0.028185430250513614,
+            0.007356806245291647
+          ],
+          "frac_diff_le_zero": 0.8784,
+          "ci_excludes_zero": false,
+          "n_boot_kept": 10000,
+          "auc_a": 0.8363002809819581,
+          "auc_b": 0.8467922106730892,
+          "verdict": "not significant (CI includes 0)"
+        },
+        {
+          "comparison": "best stack vs 7B judge alone",
+          "system_a": "stack_lr",
+          "system_b": "llm-judge-7b-4bit",
+          "point_diff": 0.05223782059407611,
+          "mean_boot_diff": 0.0522313199287549,
+          "diff_ci_95": [
+            0.03242225593454632,
+            0.07244323760310467
+          ],
+          "frac_diff_le_zero": 0.0,
+          "ci_excludes_zero": true,
+          "n_boot_kept": 10000,
+          "auc_a": 0.8467922106730892,
+          "auc_b": 0.7945543900790131,
+          "verdict": "significant (CI excludes 0)"
+        }
+      ]
+    },
+    "tofueval->ragtruth-summary": {
+      "best_stack_name": "stack_lr",
+      "scorers_used": [
+        "rouge-l",
+        "bertscore",
+        "nli-deberta",
+        "minicheck",
+        "alignscore",
+        "llm-judge-1.5b",
+        "llm-judge-3b",
+        "llm-judge-7b-4bit"
+      ],
+      "rows": [
+        {
+          "comparison": "stack-LR vs MiniCheck",
+          "system_a": "stack_lr",
+          "system_b": "minicheck",
+          "point_diff": 0.031225349335136432,
+          "mean_boot_diff": 0.031149585584549253,
+          "diff_ci_95": [
+            0.011571736374229577,
+            0.050555633871393536
+          ],
+          "frac_diff_le_zero": 0.001,
+          "ci_excludes_zero": true,
+          "n_boot_kept": 10000,
+          "auc_a": 0.8261001239576291,
+          "auc_b": 0.7948747746224927,
+          "verdict": "significant (CI excludes 0)"
+        },
+        {
+          "comparison": "stack-LR vs MiniCheck\u21927B cascade",
+          "system_a": "stack_lr",
+          "system_b": "cascade",
+          "point_diff": 0.04230406242956963,
+          "mean_boot_diff": 0.04219924828867626,
+          "diff_ci_95": [
+            0.011741982128108916,
+            0.07276954294635246
+          ],
+          "frac_diff_le_zero": 0.0038,
+          "ci_excludes_zero": true,
+          "n_boot_kept": 10000,
+          "auc_a": 0.8261001239576291,
+          "auc_b": 0.7837960615280595,
+          "verdict": "significant (CI excludes 0)"
+        },
+        {
+          "comparison": "stack-GBM vs stack-LR",
+          "system_a": "stack_gbm",
+          "system_b": "stack_lr",
+          "point_diff": -0.047716644128916075,
+          "mean_boot_diff": -0.047709935177814834,
+          "diff_ci_95": [
+            -0.07434891593968836,
+            -0.02203222366566046
+          ],
+          "frac_diff_le_zero": 0.9997,
+          "ci_excludes_zero": true,
+          "n_boot_kept": 10000,
+          "auc_a": 0.778383479828713,
+          "auc_b": 0.8261001239576291,
+          "verdict": "significant (CI excludes 0)"
+        },
+        {
+          "comparison": "best stack vs 7B judge alone",
+          "system_a": "stack_lr",
+          "system_b": "llm-judge-7b-4bit",
+          "point_diff": 0.040258057245886825,
+          "mean_boot_diff": 0.04020632647825552,
+          "diff_ci_95": [
+            0.006176045868293689,
+            0.07493390820946813
+          ],
+          "frac_diff_le_zero": 0.0108,
+          "ci_excludes_zero": true,
+          "n_boot_kept": 10000,
+          "auc_a": 0.8261001239576291,
+          "auc_b": 0.7858420667117423,
+          "verdict": "significant (CI excludes 0)"
+        }
+      ]
+    }
+  }
+}

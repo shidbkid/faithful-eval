@@ -1308,6 +1308,276 @@ def plot_frontier(front):
 
 
 # ---------------------------------------------------------------------------
+# Work order #5 — paired bootstrap + cost-adjusted verdict
+# ---------------------------------------------------------------------------
+
+def paired_bootstrap_auc_diff(y, scores_a, scores_b, n_boot=10000, seed=0):
+    """Paired bootstrap of AUC(a) - AUC(b). Same indices for both systems."""
+    y = np.asarray(y)
+    a = np.asarray(scores_a, dtype=float)
+    b = np.asarray(scores_b, dtype=float)
+    point = float(roc_auc_score(y, a) - roc_auc_score(y, b))
+    rng = np.random.default_rng(seed)
+    n = len(y)
+    diffs = []
+    for _ in range(n_boot):
+        idx = rng.integers(0, n, n)
+        yb = y[idx]
+        if yb.min() == yb.max():
+            continue
+        diffs.append(float(roc_auc_score(yb, a[idx]) - roc_auc_score(yb, b[idx])))
+    diffs = np.asarray(diffs)
+    ci = [float(np.percentile(diffs, 2.5)), float(np.percentile(diffs, 97.5))]
+    p_le_zero = float(np.mean(diffs <= 0.0))
+    excludes_zero = not (ci[0] <= 0.0 <= ci[1])
+    return {
+        "point_diff": point,
+        "mean_boot_diff": float(diffs.mean()),
+        "diff_ci_95": ci,
+        "frac_diff_le_zero": p_le_zero,
+        "ci_excludes_zero": excludes_zero,
+        "n_boot_kept": int(len(diffs)),
+        "auc_a": float(roc_auc_score(y, a)),
+        "auc_b": float(roc_auc_score(y, b)),
+    }
+
+
+def _transfer_system_scores(fit_b, eval_b, rich):
+    """Fit stacks on fit_b; return dict of named score vectors on eval_b."""
+    used = [s for s in rich if s in fit_b["scorers"] and s in eval_b["scorers"]]
+    Xtr, _ = _stack_matrix(fit_b, used)
+    Xte, _ = _stack_matrix(eval_b, used)
+    ytr = np.asarray(fit_b["binary"])
+    yte = eval_b["binary"]
+
+    scaler = StandardScaler()
+    Xtr_s = scaler.fit_transform(Xtr)
+    Xte_s = scaler.transform(Xte)
+    lr = LogisticRegression(max_iter=1000, random_state=0)
+    lr.fit(Xtr_s, ytr)
+    gbm = HistGradientBoostingClassifier(
+        max_depth=4, learning_rate=0.08, max_iter=150, random_state=0)
+    gbm.fit(Xtr, ytr)
+
+    stack_lr = lr.predict_proba(Xte_s)[:, 1]
+    stack_gbm = gbm.predict_proba(Xte)[:, 1]
+    minicheck = np.asarray(eval_b["scorers"]["minicheck"], dtype=float)
+    judge7 = np.asarray(eval_b["scorers"]["llm-judge-7b-4bit"], dtype=float)
+    casc, _, _ = soft_cascade(
+        eval_b["scorers"]["minicheck"],
+        eval_b["scorers"]["llm-judge-7b-4bit"])
+    casc = np.asarray(casc, dtype=float)
+
+    # Best stack by point AUC on this eval set
+    best_stack_name = "stack_lr" if roc_auc_score(yte, stack_lr) >= \
+        roc_auc_score(yte, stack_gbm) else "stack_gbm"
+    best_stack = stack_lr if best_stack_name == "stack_lr" else stack_gbm
+
+    return {
+        "y": yte,
+        "scorers_used": used,
+        "stack_lr": stack_lr,
+        "stack_gbm": stack_gbm,
+        "best_stack_name": best_stack_name,
+        "best_stack": best_stack,
+        "minicheck": minicheck,
+        "cascade": casc,
+        "llm-judge-7b-4bit": judge7,
+    }
+
+
+def run_paired_tests(n_boot=10000) -> dict:
+    print("### Work order #5 Task 1 - Paired bootstrap on stacking gains\n")
+    rich = [
+        "rouge-l", "bertscore", "nli-deberta", "minicheck", "alignscore",
+        "llm-judge-1.5b", "llm-judge-3b", "llm-judge-7b-4bit",
+    ]
+    rt = load_dataset_bundle("ragtruth-summary")
+    tf = load_dataset_bundle("tofueval")
+
+    comparisons = [
+        ("stack_lr", "minicheck", "stack-LR vs MiniCheck"),
+        ("stack_lr", "cascade", "stack-LR vs MiniCheck→7B cascade"),
+        ("stack_gbm", "stack_lr", "stack-GBM vs stack-LR"),
+        ("best_stack", "llm-judge-7b-4bit", "best stack vs 7B judge alone"),
+    ]
+
+    out = {
+        "protocol": (
+            f"Paired bootstrap of AUC(A)-AUC(B), {n_boot} resamples, same "
+            "example indices for both systems. Models fit once on the fit "
+            "corpus; bootstrap only the eval-set metric difference. "
+            "frac_diff_le_zero = bootstrap p-value for H0: diff<=0 "
+            "(one-sided toward A>B)."
+        ),
+        "n_boot": n_boot,
+        "directions": {},
+    }
+
+    for fit_b, eval_b, key in (
+        (rt, tf, "ragtruth-summary->tofueval"),
+        (tf, rt, "tofueval->ragtruth-summary"),
+    ):
+        print(f"#### {key}\n")
+        sys = _transfer_system_scores(fit_b, eval_b, rich)
+        y = sys["y"]
+        rows = []
+        print("| comparison | AUC_A | AUC_B | Δ | 95% CI(Δ) | "
+              "P(Δ≤0) | CI excludes 0? |")
+        print("|---|---:|---:|---:|---|---:|---|")
+        for a_key, b_key, label in comparisons:
+            res = paired_bootstrap_auc_diff(
+                y, sys[a_key], sys[b_key], n_boot=n_boot)
+            row = {
+                "comparison": label,
+                "system_a": a_key if a_key != "best_stack"
+                else sys["best_stack_name"],
+                "system_b": b_key,
+                **res,
+                "verdict": (
+                    "significant (CI excludes 0)" if res["ci_excludes_zero"]
+                    else "not significant (CI includes 0)"
+                ),
+            }
+            rows.append(row)
+            print(
+                f"| {label} | {res['auc_a']:.3f} | {res['auc_b']:.3f} | "
+                f"{res['point_diff']:+.3f} | "
+                f"[{res['diff_ci_95'][0]:+.3f}, {res['diff_ci_95'][1]:+.3f}] | "
+                f"{res['frac_diff_le_zero']:.3f} | "
+                f"{'YES' if res['ci_excludes_zero'] else 'no'} |"
+            )
+        print()
+        out["directions"][key] = {
+            "best_stack_name": sys["best_stack_name"],
+            "scorers_used": sys["scorers_used"],
+            "rows": rows,
+        }
+
+    path = os.path.join(ROOT, "results-paired-tests.json")
+    json.dump(_jsonable(out), open(path, "w"), indent=2)
+    print(f"wrote {path}")
+    return out
+
+
+def run_cost_verdict() -> dict:
+    print("### Work order #5 Task 2 - Cost-adjusted frontier verdict\n")
+    front_path = os.path.join(ROOT, "results-frontier.json")
+    if not os.path.exists(front_path):
+        raise FileNotFoundError(
+            "results-frontier.json missing; run --task frontier first")
+    front = json.load(open(front_path))
+    lat = front["latencies_ms"]
+    base_auc = None
+    base_ms = None
+    # MiniCheck alone from singles or greedy step 1
+    for s in front["singles"]:
+        if s["scorer"] == "minicheck":
+            base_auc = s["transfer_auc"]
+            base_ms = s["total_latency_ms"]
+            break
+    if base_auc is None:
+        base_auc = front["greedy_steps"][0]["transfer_auc"]
+        base_ms = front["greedy_steps"][0]["total_latency_ms"]
+
+    rows = []
+    # Systems: MiniCheck alone, each greedy step, cascade
+    systems = []
+    for st in front["greedy_steps"]:
+        systems.append({
+            "name": "+".join(st["subset"]) if len(st["subset"]) > 1
+            else st["subset"][0],
+            "auc": st["transfer_auc"],
+            "ms": st["total_latency_ms"],
+            "kind": "greedy",
+        })
+    casc = front["cascade"]
+    systems.append({
+        "name": casc["name"],
+        "auc": casc["transfer_auc"],
+        "ms": casc["total_latency_ms"],
+        "kind": "cascade",
+    })
+
+    print("| system | AUC | total ms | ΔAUC vs MiniCheck | "
+          "extra ms | AUC gained / 100 ms |")
+    print("|---|---:|---:|---:|---:|---:|")
+    for s in systems:
+        d_auc = s["auc"] - base_auc
+        d_ms = s["ms"] - base_ms
+        if abs(d_ms) < 1e-9:
+            per_100 = None
+        else:
+            per_100 = d_auc / d_ms * 100.0
+        row = {
+            "system": s["name"],
+            "kind": s["kind"],
+            "auc": s["auc"],
+            "total_latency_ms": s["ms"],
+            "delta_auc_vs_minicheck": d_auc,
+            "extra_ms_vs_minicheck": d_ms,
+            "auc_gained_per_100ms": per_100,
+        }
+        rows.append(row)
+        per_s = "—" if per_100 is None else f"{per_100:+.4f}"
+        print(f"| {s['name']} | {s['auc']:.3f} | {s['ms']:.0f} | "
+              f"{d_auc:+.3f} | {d_ms:+.0f} | {per_s} |")
+
+    # Verdict: is any additional compute worth it?
+    # Look at positive per_100 among systems with extra cost; also note
+    # cascade vs full stack.
+    positive = [r for r in rows
+                if r["auc_gained_per_100ms"] is not None
+                and r["extra_ms_vs_minicheck"] > 0
+                and r["delta_auc_vs_minicheck"] > 0]
+    if not positive:
+        verdict = (
+            "Above MiniCheck alone, no system on this frontier gains AUC "
+            "per additional compute in a way that looks worthwhile — "
+            "stay with MiniCheck."
+        )
+    else:
+        best = max(positive, key=lambda r: r["auc_gained_per_100ms"])
+        # Cascade often has better cost profile than summing all members
+        casc_row = next((r for r in rows if r["kind"] == "cascade"), None)
+        # One-sentence verdict for README
+        if casc_row and casc_row["delta_auc_vs_minicheck"] <= 0:
+            verdict = (
+                "Above MiniCheck alone, additional compute buys little: the "
+                f"best AUC/100ms among improving systems is "
+                f"{best['auc_gained_per_100ms']:+.4f} "
+                f"({best['system']}), and the MiniCheck→7B cascade does not "
+                "beat MiniCheck's TRANSFER AUC on TofuEval — prefer "
+                "MiniCheck alone unless paired tests show a significant gain."
+            )
+        else:
+            verdict = (
+                "Above MiniCheck alone, extra compute has diminishing returns: "
+                f"the best AUC gained per additional 100 ms is "
+                f"{best['auc_gained_per_100ms']:+.4f} ({best['system']}); "
+                "unless a paired test shows a significant AUC lift, MiniCheck "
+                "alone remains the rational default."
+            )
+
+    print(f"\nVERDICT: {verdict}\n")
+    out = {
+        "protocol": (
+            "TRANSFER AUC from results-frontier.json (fit RT Summary → eval "
+            "TofuEval). auc_gained_per_100ms = "
+            "(AUC - MiniCheck_AUC) / (ms - MiniCheck_ms) * 100. "
+            "Cascade latency is soft-cascade mix, not sum of both."
+        ),
+        "minicheck_baseline": {"auc": base_auc, "ms": base_ms},
+        "rows": rows,
+        "verdict_sentence": verdict,
+    }
+    path = os.path.join(ROOT, "results-cost-verdict.json")
+    json.dump(_jsonable(out), open(path, "w"), indent=2)
+    print(f"wrote {path}")
+    return out
+
+
+# ---------------------------------------------------------------------------
 # main
 # ---------------------------------------------------------------------------
 
@@ -1316,8 +1586,9 @@ def main():
     parser.add_argument(
         "--task", default="all",
         choices=("all", "coverage", "predictability", "oracle",
-                 "stacking", "frontier"),
+                 "stacking", "frontier", "paired", "cost"),
     )
+    parser.add_argument("--n-boot", type=int, default=10000)
     args = parser.parse_args()
     task = args.task
 
@@ -1331,6 +1602,10 @@ def main():
         run_stacking()
     if task in ("all", "frontier"):
         run_frontier()
+    if task in ("all", "paired"):
+        run_paired_tests(n_boot=args.n_boot)
+    if task in ("all", "cost"):
+        run_cost_verdict()
 
 
 if __name__ == "__main__":
