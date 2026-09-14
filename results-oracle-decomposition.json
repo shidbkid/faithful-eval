@@ -1,0 +1,191 @@
+{
+  "protocol": "Cheating oracle: soft score from whether any scorer is OOF-correct (label-informed). Random-tiebreak: pick a random scorer's raw score each example (100 seeds). Learnable: disagreement GBM picks between a pair on held-out folds. Headroom = cheating - best_single; learnable_frac = (learnable - best_single) / headroom.",
+  "datasets": {
+    "ragtruth-summary": {
+      "best_single_name": "minicheck",
+      "best_single_auc": 0.7948747746224927,
+      "singles": {
+        "rouge-l": 0.6577959488393057,
+        "bertscore": 0.6400122549019608,
+        "nli-deberta": 0.6551125478927203,
+        "minicheck": 0.7948747746224927,
+        "alignscore": 0.7308076966418752,
+        "llm-judge-1.5b": 0.7197853279242732,
+        "llm-judge-3b": 0.7162145030425964,
+        "llm-judge-7b-4bit": 0.7858420667117423
+      },
+      "cheating_oracle_all": {
+        "roc_auc": 0.9789976335361732,
+        "roc_auc_ci": [
+          0.9690906453578396,
+          0.9876836254191326
+        ],
+        "frac_any_correct": 0.9755555555555555,
+        "headroom_over_best": 0.18412285891368052
+      },
+      "random_tiebreak_all": {
+        "roc_auc_mean": 0.6445254042709037,
+        "roc_auc_std": 0.01749435967034362,
+        "roc_auc_ci": [
+          0.6103659567275186,
+          0.6800975814176244
+        ]
+      },
+      "pair_decompositions": [
+        {
+          "pair": "minicheck vs llm-judge-7b-4bit",
+          "best_single": 0.7948747746224927,
+          "best_single_name": "minicheck",
+          "cheating_oracle_auc": 0.9380845729096237,
+          "cheating_oracle_ci": [
+            0.9222256335758744,
+            0.9524273674245247
+          ],
+          "random_tiebreak_auc": 0.6445254042709037,
+          "learnable_oracle_auc": 0.7685760367365339,
+          "learnable_oracle_ci": [
+            0.728619655660145,
+            0.8133202080240284
+          ],
+          "headroom": 0.14320979828713098,
+          "learnable_lift": -0.026298737885958823,
+          "learnable_fraction_of_headroom": -0.18363783903410513,
+          "unlearnable_fraction_of_headroom": 1.1836378390341051
+        },
+        {
+          "pair": "nli-deberta vs llm-judge-3b",
+          "best_single": 0.7162145030425964,
+          "best_single_name": "llm-judge-3b",
+          "cheating_oracle_auc": 0.8602518593644355,
+          "cheating_oracle_ci": [
+            0.8375424683577649,
+            0.8823873477080243
+          ],
+          "random_tiebreak_auc": 0.6445254042709037,
+          "learnable_oracle_auc": 0.6811964728420103,
+          "learnable_oracle_ci": [
+            0.6434272102795298,
+            0.7207198636784795
+          ],
+          "headroom": 0.14403735632183912,
+          "learnable_lift": -0.035018030200586026,
+          "learnable_fraction_of_headroom": -0.2431176959561882,
+          "unlearnable_fraction_of_headroom": 1.2431176959561883
+        }
+      ],
+      "headline": {
+        "pair": "minicheck vs llm-judge-7b-4bit",
+        "best_single": 0.7948747746224927,
+        "best_single_name": "minicheck",
+        "cheating_oracle_auc": 0.9380845729096237,
+        "cheating_oracle_ci": [
+          0.9222256335758744,
+          0.9524273674245247
+        ],
+        "random_tiebreak_auc": 0.6445254042709037,
+        "learnable_oracle_auc": 0.7685760367365339,
+        "learnable_oracle_ci": [
+          0.728619655660145,
+          0.8133202080240284
+        ],
+        "headroom": 0.14320979828713098,
+        "learnable_lift": -0.026298737885958823,
+        "learnable_fraction_of_headroom": -0.18363783903410513,
+        "unlearnable_fraction_of_headroom": 1.1836378390341051
+      }
+    },
+    "tofueval": {
+      "best_single_name": "minicheck",
+      "best_single_auc": 0.8320842312080112,
+      "singles": {
+        "rouge-l": 0.7238824101068999,
+        "bertscore": 0.6968841107871719,
+        "nli-deberta": 0.7035759179448177,
+        "minicheck": 0.8320842312080112,
+        "alignscore": 0.7849339269869438,
+        "llm-judge-1.5b": 0.7545778404529513,
+        "llm-judge-3b": 0.7921684201630963,
+        "llm-judge-7b-4bit": 0.7945543900790131
+      },
+      "cheating_oracle_all": {
+        "roc_auc": 0.9963081505894283,
+        "roc_auc_ci": [
+          0.9931621309273341,
+          0.9988789328449211
+        ],
+        "frac_any_correct": 0.9913217623497997,
+        "headroom_over_best": 0.16422391938141712
+      },
+      "random_tiebreak_all": {
+        "roc_auc_mean": 0.7284872000042253,
+        "roc_auc_std": 0.012614452437227048,
+        "roc_auc_ci": [
+          0.703518711444205,
+          0.7501382462923057
+        ]
+      },
+      "pair_decompositions": [
+        {
+          "pair": "minicheck vs llm-judge-7b-4bit",
+          "best_single": 0.8320842312080112,
+          "best_single_name": "minicheck",
+          "cheating_oracle_auc": 0.9631924198250729,
+          "cheating_oracle_ci": [
+            0.9542585966979088,
+            0.9710747664352147
+          ],
+          "random_tiebreak_auc": 0.7284872000042253,
+          "learnable_oracle_auc": 0.802818798326784,
+          "learnable_oracle_ci": [
+            0.7721286126786377,
+            0.8325215500623502
+          ],
+          "headroom": 0.13110818861706164,
+          "learnable_lift": -0.029265432881227182,
+          "learnable_fraction_of_headroom": -0.22321590428424815,
+          "unlearnable_fraction_of_headroom": 1.223215904284248
+        },
+        {
+          "pair": "nli-deberta vs llm-judge-3b",
+          "best_single": 0.7921684201630963,
+          "best_single_name": "llm-judge-3b",
+          "cheating_oracle_auc": 0.9044529302404191,
+          "cheating_oracle_ci": [
+            0.8894393768389417,
+            0.9195479297592007
+          ],
+          "random_tiebreak_auc": 0.7284872000042253,
+          "learnable_oracle_auc": 0.7537169370853932,
+          "learnable_oracle_ci": [
+            0.7293266836486083,
+            0.783171314423242
+          ],
+          "headroom": 0.11228451007732276,
+          "learnable_lift": -0.038451483077703075,
+          "learnable_fraction_of_headroom": -0.3424469060890423,
+          "unlearnable_fraction_of_headroom": 1.3424469060890423
+        }
+      ],
+      "headline": {
+        "pair": "minicheck vs llm-judge-7b-4bit",
+        "best_single": 0.8320842312080112,
+        "best_single_name": "minicheck",
+        "cheating_oracle_auc": 0.9631924198250729,
+        "cheating_oracle_ci": [
+          0.9542585966979088,
+          0.9710747664352147
+        ],
+        "random_tiebreak_auc": 0.7284872000042253,
+        "learnable_oracle_auc": 0.802818798326784,
+        "learnable_oracle_ci": [
+          0.7721286126786377,
+          0.8325215500623502
+        ],
+        "headroom": 0.13110818861706164,
+        "learnable_lift": -0.029265432881227182,
+        "learnable_fraction_of_headroom": -0.22321590428424815,
+        "unlearnable_fraction_of_headroom": 1.223215904284248
+      }
+    }
+  }
+}
