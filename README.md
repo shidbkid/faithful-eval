@@ -346,6 +346,93 @@ ROUGE-L stay nearer 0.06. Probability miscalibration under shift is real;
 the earlier “MiniCheck ordering-uninformative” label was an artifact of
 degenerate `|s−t|` confidence.
 
+## Can routing beat the best single scorer?
+
+Phase 0 (`ensemble.py`): before investing in a better router, measure how much
+of the ~0.9 oracle ceiling is **learnable** vs noise, and try the missing
+baseline — **stacking** (learned combination of scores, not hard selection).
+
+**Coverage note.** SummEval has only MiniCheck/AlignScore `*.preds.json` (base
+scorers were never saved per-example). Leave-one-out stacking therefore uses
+RAGTruth Summary / QA / TofuEval. spaCy NER was skipped for speed
+(`FAITHFUL_EVAL_SPACY=1` to enable). Details: `results-coverage.json`.
+
+### Gate — is “which scorer is correct” predictable?
+
+GBM on cheap features (lengths, ROUGE, overlaps, …), 5-fold CV. Decisive
+test: on examples where two scorers **disagree**, predict which is right.
+
+| dataset | pair | n disagree | which-correct AUC | call |
+|---|---|---:|---:|---|
+| RAGTruth Summary | **minicheck vs 7B-4bit** | 258 | **0.546** | **NOISE → no-go** |
+| TofuEval | **minicheck vs 7B-4bit** | 350 | **0.560** | **NOISE → no-go** |
+| RAGTruth Summary | nli vs 3B | 400 | 0.633 | weak |
+| TofuEval | nli vs 3B | 625 | 0.691 | weak |
+| RAGTruth Summary | rouge-l vs 3B | 379 | 0.762 | strong* |
+| TofuEval | rouge-l vs 3B | 457 | 0.793 | strong* |
+
+\*ROUGE-vs-judge disagreements are predictable from lexical features — that is
+closer to the already-known task split (QA→ROUGE) than to general routing
+among strong detectors. The **primary** cascade pair (MiniCheck vs 7B) is
+noise. `results-predictability.json`.
+
+### Oracle decomposition (headline)
+
+On MiniCheck vs 7B-4bit:
+
+| dataset | best single | cheating oracle | random pick | learnable (GBM pick) | learnable % of headroom |
+|---|---:|---:|---:|---:|---:|
+| RAGTruth Summary | 0.795 (MiniCheck) | 0.938 | 0.645 | 0.769 | **−18%** |
+| TofuEval | 0.832 (MiniCheck) | 0.963 | 0.728 | 0.803 | **−22%** |
+
+The disagreement model **hurts** vs always picking the best single. Essentially
+**none** of the oracle headroom over MiniCheck is learnable with these
+features — the complementarity is irreducible noise. **Go/no-go: no-go** for
+a hard-routing research program. `results-oracle-decomposition.json`.
+
+### Stacking (the missing baseline)
+
+Combine the *vector* of scorer outputs (LR / calibrated LR / GBM).
+
+**IN (5-fold CV):**
+
+| dataset | best single | MiniCheck→7B cascade | stack LR | stack GBM | stack LR (isotonic inputs) |
+|---|---:|---:|---:|---:|---:|
+| RAGTruth Summary | 0.795 | 0.784 | 0.820 | 0.812 | **0.827** |
+| TofuEval | 0.832 | 0.801 | **0.848** | 0.830 | 0.845 |
+
+**TRANSFER (fit one corpus → eval the other; rich scorer set):**
+
+| direction | best single | cascade | stack LR | stack GBM | failed router (prior) |
+|---|---:|---:|---:|---:|---:|
+| RT Summary → TofuEval | 0.832 | 0.801 | **0.847** | 0.836 | 0.744 |
+| TofuEval → RT Summary | 0.795 | 0.784 | **0.826** | 0.778 | — |
+
+Leave-one-out among Summary/QA/TofuEval (narrower shared scorers, no
+MiniCheck on QA): stack LR 0.729 / 0.747 / 0.801 vs best singles 0.716 /
+0.729 / 0.792 — small or null gains. **Combining beats hard routing**; on
+rich Summary↔TofuEval transfer, a linear stack slightly beats MiniCheck alone
+and clearly beats the failed router. `results-stacking.json`.
+
+### Cost-constrained frontier
+
+Greedy forward selection maximizing TRANSFER AUC (train on RT Summary, eval
+TofuEval). Latency = **sum** of member medians (sequential); peak VRAM =
+**max** of members.
+
+| budget | what wins |
+|---|---|
+| Low (~230 ms, ~3.6 GB) | **MiniCheck alone** (0.832) |
+| Medium (~650 ms, ~6.6 GB) | MiniCheck + 7B stack (0.843); cascade is in the same band at mixed latency |
+| High (~1.3 s+) | Diminishing returns (peak greedy ≈ 0.852); cheating oracle ~0.96 stays out of reach |
+
+![Cost frontier](frontier.png)
+
+**Conclusion.** Routing among strong detectors is a **no-go** — the oracle gap
+is mostly noise. Stacking is a real but modest gain over the best single
+scorer; the practical deployment answer remains MiniCheck alone or the
+MiniCheck→7B cascade, not a learned router. `results-frontier.json`.
+
 ## Benchmark
 
 Three datasets, same scorer interface. Pick with `--dataset`:
