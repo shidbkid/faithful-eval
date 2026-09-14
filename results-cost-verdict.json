@@ -1,0 +1,91 @@
+{
+  "protocol": "TRANSFER AUC from results-frontier.json (fit RT Summary \u2192 eval TofuEval). auc_gained_per_100ms = (AUC - MiniCheck_AUC) / (ms - MiniCheck_ms) * 100. Cascade latency is soft-cascade mix, not sum of both.",
+  "minicheck_baseline": {
+    "auc": 0.8320842312080112,
+    "ms": 230.64730000010059
+  },
+  "rows": [
+    {
+      "system": "minicheck",
+      "kind": "greedy",
+      "auc": 0.8320842312080112,
+      "total_latency_ms": 230.64730000010059,
+      "delta_auc_vs_minicheck": 0.0,
+      "extra_ms_vs_minicheck": 0.0,
+      "auc_gained_per_100ms": null
+    },
+    {
+      "system": "minicheck+llm-judge-7b-4bit",
+      "kind": "greedy",
+      "auc": 0.8432324016563146,
+      "total_latency_ms": 647.8342999992037,
+      "delta_auc_vs_minicheck": 0.011148170448303407,
+      "extra_ms_vs_minicheck": 417.18699999910314,
+      "auc_gained_per_100ms": 0.0026722238344740784
+    },
+    {
+      "system": "minicheck+llm-judge-7b-4bit+alignscore",
+      "kind": "greedy",
+      "auc": 0.8466231989690286,
+      "total_latency_ms": 700.9763499993369,
+      "delta_auc_vs_minicheck": 0.014538967761017374,
+      "extra_ms_vs_minicheck": 470.3290499992363,
+      "auc_gained_per_100ms": 0.0030912332038688624
+    },
+    {
+      "system": "minicheck+llm-judge-7b-4bit+alignscore+nli-deberta",
+      "kind": "greedy",
+      "auc": 0.848688310728018,
+      "total_latency_ms": 778.2412000271961,
+      "delta_auc_vs_minicheck": 0.016604079520006754,
+      "extra_ms_vs_minicheck": 547.5939000270955,
+      "auc_gained_per_100ms": 0.0030321885468748222
+    },
+    {
+      "system": "minicheck+llm-judge-7b-4bit+alignscore+nli-deberta+llm-judge-3b",
+      "kind": "greedy",
+      "auc": 0.8514611589977608,
+      "total_latency_ms": 1319.2722000569574,
+      "delta_auc_vs_minicheck": 0.019376927789749532,
+      "extra_ms_vs_minicheck": 1088.6249000568569,
+      "auc_gained_per_100ms": 0.0017799453042767544
+    },
+    {
+      "system": "minicheck+llm-judge-7b-4bit+alignscore+nli-deberta+llm-judge-3b+rouge-l",
+      "kind": "greedy",
+      "auc": 0.8515139751552794,
+      "total_latency_ms": 1323.956250042329,
+      "delta_auc_vs_minicheck": 0.019429743947268152,
+      "extra_ms_vs_minicheck": 1093.3089500422284,
+      "auc_gained_per_100ms": 0.0017771503605195668
+    },
+    {
+      "system": "minicheck+llm-judge-7b-4bit+alignscore+nli-deberta+llm-judge-3b+rouge-l+bertscore",
+      "kind": "greedy",
+      "auc": 0.8512974289094519,
+      "total_latency_ms": 1371.9437000729613,
+      "delta_auc_vs_minicheck": 0.0192131977014407,
+      "extra_ms_vs_minicheck": 1141.2964000728607,
+      "auc_gained_per_100ms": 0.0016834538074608945
+    },
+    {
+      "system": "minicheck+llm-judge-7b-4bit+alignscore+nli-deberta+llm-judge-3b+rouge-l+bertscore+llm-judge-1.5b",
+      "kind": "greedy",
+      "auc": 0.8467922106730892,
+      "total_latency_ms": 1489.9927000735715,
+      "delta_auc_vs_minicheck": 0.014707979465077958,
+      "extra_ms_vs_minicheck": 1259.345400073471,
+      "auc_gained_per_100ms": 0.0011679067128223827
+    },
+    {
+      "system": "minicheck->7b cascade",
+      "kind": "cascade",
+      "auc": 0.8013914416698358,
+      "total_latency_ms": 293.9064238982937,
+      "delta_auc_vs_minicheck": -0.030692789538175447,
+      "extra_ms_vs_minicheck": 63.25912389819314,
+      "auc_gained_per_100ms": -0.048519150514274065
+    }
+  ],
+  "verdict_sentence": "Above MiniCheck alone, additional compute buys little: the best AUC/100ms among improving systems is +0.0031 (minicheck+llm-judge-7b-4bit+alignscore), and the MiniCheck\u21927B cascade does not beat MiniCheck's TRANSFER AUC on TofuEval \u2014 prefer MiniCheck alone unless paired tests show a significant gain."
+}
