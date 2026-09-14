@@ -405,14 +405,28 @@ Combine the *vector* of scorer outputs (LR / calibrated LR / GBM).
 
 | direction | best single | cascade | stack LR | stack GBM | failed router (prior) |
 |---|---:|---:|---:|---:|---:|
-| RT Summary → TofuEval | 0.832 | 0.801 | **0.847** | 0.836 | 0.744 |
-| TofuEval → RT Summary | 0.795 | 0.784 | **0.826** | 0.778 | — |
+| RT Summary → TofuEval | 0.832 | 0.801 | 0.847 | 0.836 | 0.744 |
+| TofuEval → RT Summary | 0.795 | 0.784 | 0.826 | 0.778 | — |
 
-Leave-one-out among Summary/QA/TofuEval (narrower shared scorers, no
-MiniCheck on QA): stack LR 0.729 / 0.747 / 0.801 vs best singles 0.716 /
-0.729 / 0.792 — small or null gains. **Combining beats hard routing**; on
-rich Summary↔TofuEval transfer, a linear stack slightly beats MiniCheck alone
-and clearly beats the failed router. `results-stacking.json`.
+**Paired bootstrap on the difference** (10k resamples, same example indices;
+`results-paired-tests.json`):
+
+| direction | comparison | Δ AUC | 95% CI(Δ) | CI excludes 0? |
+|---|---|---:|---|---|
+| RT → TF | stack-LR − MiniCheck | +0.015 | [−0.005, +0.035] | **no** |
+| TF → RT | stack-LR − MiniCheck | +0.031 | [+0.012, +0.051] | **yes** |
+| RT → TF | stack-LR − cascade | +0.045 | [+0.026, +0.065] | yes |
+| TF → RT | stack-LR − cascade | +0.042 | [+0.012, +0.073] | yes |
+| both | stack-GBM − stack-LR | ≤ 0 | includes or below 0 | GBM not better |
+| both | best stack − 7B alone | +0.04–0.05 | excludes 0 | yes |
+
+On the primary RT→TF transfer, **the stacking gain is not statistically
+distinguishable from the best single scorer under a paired bootstrap.**
+TF→RT does exclude zero. Stacking clearly beats the cascade and the 7B judge
+alone; GBM does not beat LR. Leave-one-out among Summary/QA/TofuEval
+(narrower scorers): stack LR 0.729 / 0.747 / 0.801 vs best singles 0.716 /
+0.729 / 0.792 — small or null gains. Stacking beats the failed hard router
+(0.744); it does not robustly beat MiniCheck.
 
 ### Cost-constrained frontier
 
@@ -426,12 +440,23 @@ TofuEval). Latency = **sum** of member medians (sequential); peak VRAM =
 | Medium (~650 ms, ~6.6 GB) | MiniCheck + 7B stack (0.843); cascade is in the same band at mixed latency |
 | High (~1.3 s+) | Diminishing returns (peak greedy ≈ 0.852); cheating oracle ~0.96 stays out of reach |
 
+**Cost-adjusted** (AUC gained per extra 100 ms over MiniCheck;
+`results-cost-verdict.json`): best among improving greedy steps is only
+**+0.0031 AUC / 100 ms**; the MiniCheck→7B cascade is **below** MiniCheck on
+this TofuEval TRANSFER eval (−0.031 AUC).
+
+Above MiniCheck alone, extra compute is not worth it on this frontier: the
+paired RT→TF stacking gain is insignificant, and AUC per additional 100 ms
+tops out around +0.003.
+
 ![Cost frontier](frontier.png)
 
 **Conclusion.** Routing among strong detectors is a **no-go** — the oracle gap
-is mostly noise. Stacking is a real but modest gain over the best single
-scorer; the practical deployment answer remains MiniCheck alone or the
-MiniCheck→7B cascade, not a learned router. `results-frontier.json`.
+is mostly noise. Stacking is a plausible combiner that beats the failed
+router and the cascade, but on RT→TF it is **not** a significant upgrade over
+MiniCheck alone; MiniCheck (or the RAGTruth-measured MiniCheck→7B cascade for
+latency) remains the practical answer, not a learned router.
+`results-frontier.json`.
 
 ## Benchmark
 
