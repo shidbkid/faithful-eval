@@ -1,0 +1,196 @@
+{
+  "protocol": "Greedy forward selection maximizing TRANSFER AUC (train stack on RAGTruth Summary, eval TofuEval). Latency = sum of member median ms (sequential). Peak VRAM = max of members.",
+  "latencies_ms": {
+    "rouge-l": 4.68404998537153,
+    "bertscore": 47.98745003063232,
+    "nli-deberta": 77.26485002785921,
+    "minicheck": 230.64730000010059,
+    "alignscore": 53.14205000013317,
+    "llm-judge-1.5b": 118.04900000061025,
+    "llm-judge-3b": 541.0310000297613,
+    "llm-judge-7b-4bit": 417.18699999910314
+  },
+  "vram_gb": {
+    "rouge-l": 0.0,
+    "bertscore": 1.125000704,
+    "nli-deberta": 1.534254592,
+    "minicheck": 3.57136896,
+    "alignscore": 1.513961472,
+    "llm-judge-1.5b": 3.566122496,
+    "llm-judge-3b": 6.81441792,
+    "llm-judge-7b-4bit": 6.58587136
+  },
+  "greedy_steps": [
+    {
+      "step": 1,
+      "added": "minicheck",
+      "subset": [
+        "minicheck"
+      ],
+      "transfer_auc": 0.8320842312080112,
+      "total_latency_ms": 230.64730000010059,
+      "peak_vram_gb": 3.57136896
+    },
+    {
+      "step": 2,
+      "added": "llm-judge-7b-4bit",
+      "subset": [
+        "minicheck",
+        "llm-judge-7b-4bit"
+      ],
+      "transfer_auc": 0.8432324016563146,
+      "total_latency_ms": 647.8342999992037,
+      "peak_vram_gb": 6.58587136
+    },
+    {
+      "step": 3,
+      "added": "alignscore",
+      "subset": [
+        "minicheck",
+        "llm-judge-7b-4bit",
+        "alignscore"
+      ],
+      "transfer_auc": 0.8466231989690286,
+      "total_latency_ms": 700.9763499993369,
+      "peak_vram_gb": 6.58587136
+    },
+    {
+      "step": 4,
+      "added": "nli-deberta",
+      "subset": [
+        "minicheck",
+        "llm-judge-7b-4bit",
+        "alignscore",
+        "nli-deberta"
+      ],
+      "transfer_auc": 0.848688310728018,
+      "total_latency_ms": 778.2412000271961,
+      "peak_vram_gb": 6.58587136
+    },
+    {
+      "step": 5,
+      "added": "llm-judge-3b",
+      "subset": [
+        "minicheck",
+        "llm-judge-7b-4bit",
+        "alignscore",
+        "nli-deberta",
+        "llm-judge-3b"
+      ],
+      "transfer_auc": 0.8514611589977608,
+      "total_latency_ms": 1319.2722000569574,
+      "peak_vram_gb": 6.81441792
+    },
+    {
+      "step": 6,
+      "added": "rouge-l",
+      "subset": [
+        "minicheck",
+        "llm-judge-7b-4bit",
+        "alignscore",
+        "nli-deberta",
+        "llm-judge-3b",
+        "rouge-l"
+      ],
+      "transfer_auc": 0.8515139751552794,
+      "total_latency_ms": 1323.956250042329,
+      "peak_vram_gb": 6.81441792
+    },
+    {
+      "step": 7,
+      "added": "bertscore",
+      "subset": [
+        "minicheck",
+        "llm-judge-7b-4bit",
+        "alignscore",
+        "nli-deberta",
+        "llm-judge-3b",
+        "rouge-l",
+        "bertscore"
+      ],
+      "transfer_auc": 0.8512974289094519,
+      "total_latency_ms": 1371.9437000729613,
+      "peak_vram_gb": 6.81441792
+    },
+    {
+      "step": 8,
+      "added": "llm-judge-1.5b",
+      "subset": [
+        "minicheck",
+        "llm-judge-7b-4bit",
+        "alignscore",
+        "nli-deberta",
+        "llm-judge-3b",
+        "rouge-l",
+        "bertscore",
+        "llm-judge-1.5b"
+      ],
+      "transfer_auc": 0.8467922106730892,
+      "total_latency_ms": 1489.9927000735715,
+      "peak_vram_gb": 6.81441792
+    }
+  ],
+  "singles": [
+    {
+      "scorer": "rouge-l",
+      "transfer_auc": 0.7238824101068999,
+      "total_latency_ms": 4.68404998537153,
+      "peak_vram_gb": 0.0
+    },
+    {
+      "scorer": "bertscore",
+      "transfer_auc": 0.6968841107871719,
+      "total_latency_ms": 47.98745003063232,
+      "peak_vram_gb": 1.125000704
+    },
+    {
+      "scorer": "nli-deberta",
+      "transfer_auc": 0.7035759179448177,
+      "total_latency_ms": 77.26485002785921,
+      "peak_vram_gb": 1.534254592
+    },
+    {
+      "scorer": "minicheck",
+      "transfer_auc": 0.8320842312080112,
+      "total_latency_ms": 230.64730000010059,
+      "peak_vram_gb": 3.57136896
+    },
+    {
+      "scorer": "alignscore",
+      "transfer_auc": 0.7849339269869438,
+      "total_latency_ms": 53.14205000013317,
+      "peak_vram_gb": 1.513961472
+    },
+    {
+      "scorer": "llm-judge-1.5b",
+      "transfer_auc": 0.7545778404529513,
+      "total_latency_ms": 118.04900000061025,
+      "peak_vram_gb": 3.566122496
+    },
+    {
+      "scorer": "llm-judge-3b",
+      "transfer_auc": 0.7921684201630963,
+      "total_latency_ms": 541.0310000297613,
+      "peak_vram_gb": 6.81441792
+    },
+    {
+      "scorer": "llm-judge-7b-4bit",
+      "transfer_auc": 0.7945543900790131,
+      "total_latency_ms": 417.18699999910314,
+      "peak_vram_gb": 6.58587136
+    }
+  ],
+  "cascade": {
+    "name": "minicheck->7b cascade",
+    "transfer_auc": 0.8013914416698358,
+    "total_latency_ms": 293.9064238982937,
+    "peak_vram_gb": 6.58587136,
+    "note": "evaluated on TofuEval with MiniCheck mid-band->7B; latency mix uses Summary-measured medians as proxy"
+  },
+  "oracle": {
+    "name": "cheating oracle",
+    "transfer_auc": 0.9963081505894283,
+    "total_latency_ms": 1489.9927000735715,
+    "peak_vram_gb": 6.81441792
+  }
+}
