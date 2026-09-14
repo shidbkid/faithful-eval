@@ -1,0 +1,288 @@
+{
+  "protocol": "Stacking on vector of scorer outputs. IN: 5-fold CV. TRANSFER: leave-one-dataset-out among ragtruth-summary / ragtruth-qa / tofueval (SummEval omitted \u2014 no base preds). Also report Summary\u2194TofuEval transfer with rich scorer set including MiniCheck.",
+  "summeval_note": "SummEval has only minicheck/alignscore preds; excluded from leave-one-out that needs the full score vector.",
+  "IN": {
+    "ragtruth-summary": {
+      "rows": [
+        {
+          "model": "lr_raw",
+          "roc_auc": 0.8197261663286003,
+          "scorers": [
+            "rouge-l",
+            "bertscore",
+            "nli-deberta",
+            "minicheck",
+            "alignscore",
+            "llm-judge-1.5b",
+            "llm-judge-3b",
+            "llm-judge-7b-4bit"
+          ]
+        },
+        {
+          "model": "lr_on_raw_calibrated_clf",
+          "roc_auc": 0.8159440500338064,
+          "scorers": [
+            "rouge-l",
+            "bertscore",
+            "nli-deberta",
+            "minicheck",
+            "alignscore",
+            "llm-judge-1.5b",
+            "llm-judge-3b",
+            "llm-judge-7b-4bit"
+          ]
+        },
+        {
+          "model": "gbm_raw",
+          "roc_auc": 0.8118168244309217,
+          "scorers": [
+            "rouge-l",
+            "bertscore",
+            "nli-deberta",
+            "minicheck",
+            "alignscore",
+            "llm-judge-1.5b",
+            "llm-judge-3b",
+            "llm-judge-7b-4bit"
+          ]
+        },
+        {
+          "model": "lr_isotonic_inputs",
+          "roc_auc": 0.8266882183908045,
+          "scorers": [
+            "rouge-l",
+            "bertscore",
+            "nli-deberta",
+            "minicheck",
+            "alignscore",
+            "llm-judge-1.5b",
+            "llm-judge-3b",
+            "llm-judge-7b-4bit"
+          ]
+        }
+      ],
+      "singles": {
+        "rouge-l": 0.6577959488393057,
+        "bertscore": 0.6400122549019608,
+        "nli-deberta": 0.6551125478927203,
+        "minicheck": 0.7948747746224927,
+        "alignscore": 0.7308076966418752,
+        "llm-judge-1.5b": 0.7197853279242732,
+        "llm-judge-3b": 0.7162145030425964,
+        "llm-judge-7b-4bit": 0.7858420667117423
+      },
+      "best_single": "minicheck",
+      "best_single_auc": 0.7948747746224927,
+      "minicheck_7b_cascade_auc": 0.7837960615280595
+    },
+    "tofueval": {
+      "rows": [
+        {
+          "model": "lr_raw",
+          "roc_auc": 0.8476055794988804,
+          "scorers": [
+            "rouge-l",
+            "bertscore",
+            "nli-deberta",
+            "minicheck",
+            "alignscore",
+            "llm-judge-1.5b",
+            "llm-judge-3b",
+            "llm-judge-7b-4bit"
+          ]
+        },
+        {
+          "model": "lr_on_raw_calibrated_clf",
+          "roc_auc": 0.8471856910466049,
+          "scorers": [
+            "rouge-l",
+            "bertscore",
+            "nli-deberta",
+            "minicheck",
+            "alignscore",
+            "llm-judge-1.5b",
+            "llm-judge-3b",
+            "llm-judge-7b-4bit"
+          ]
+        },
+        {
+          "model": "gbm_raw",
+          "roc_auc": 0.8303320551823213,
+          "scorers": [
+            "rouge-l",
+            "bertscore",
+            "nli-deberta",
+            "minicheck",
+            "alignscore",
+            "llm-judge-1.5b",
+            "llm-judge-3b",
+            "llm-judge-7b-4bit"
+          ]
+        },
+        {
+          "model": "lr_isotonic_inputs",
+          "roc_auc": 0.8445858156927368,
+          "scorers": [
+            "rouge-l",
+            "bertscore",
+            "nli-deberta",
+            "minicheck",
+            "alignscore",
+            "llm-judge-1.5b",
+            "llm-judge-3b",
+            "llm-judge-7b-4bit"
+          ]
+        }
+      ],
+      "singles": {
+        "rouge-l": 0.7238824101068999,
+        "bertscore": 0.6968841107871719,
+        "nli-deberta": 0.7035759179448177,
+        "minicheck": 0.8320842312080112,
+        "alignscore": 0.7849339269869438,
+        "llm-judge-1.5b": 0.7545778404529513,
+        "llm-judge-3b": 0.7921684201630963,
+        "llm-judge-7b-4bit": 0.7945543900790131
+      },
+      "best_single": "minicheck",
+      "best_single_auc": 0.8320842312080112,
+      "minicheck_7b_cascade_auc": 0.8013914416698358
+    }
+  },
+  "TRANSFER_loo": {
+    "rows": [
+      {
+        "held_out": "ragtruth-summary",
+        "train_on": [
+          "ragtruth-qa",
+          "tofueval"
+        ],
+        "scorers": [
+          "rouge-l",
+          "bertscore",
+          "nli-deberta",
+          "llm-judge-3b"
+        ],
+        "stack_lr": 0.7292300540906018,
+        "stack_gbm": 0.6933245999549245,
+        "best_single": "llm-judge-3b",
+        "best_single_auc": 0.7162145030425964,
+        "singles": {
+          "rouge-l": 0.6577959488393057,
+          "bertscore": 0.6400122549019608,
+          "nli-deberta": 0.6551125478927203,
+          "llm-judge-3b": 0.7162145030425964
+        }
+      },
+      {
+        "held_out": "ragtruth-qa",
+        "train_on": [
+          "ragtruth-summary",
+          "tofueval"
+        ],
+        "scorers": [
+          "rouge-l",
+          "bertscore",
+          "nli-deberta",
+          "llm-judge-3b"
+        ],
+        "stack_lr": 0.7470185810810811,
+        "stack_gbm": 0.7097381756756755,
+        "best_single": "rouge-l",
+        "best_single_auc": 0.7293243243243243,
+        "singles": {
+          "rouge-l": 0.7293243243243243,
+          "bertscore": 0.7219087837837838,
+          "nli-deberta": 0.6889907094594594,
+          "llm-judge-3b": 0.6259923986486486
+        }
+      },
+      {
+        "held_out": "tofueval",
+        "train_on": [
+          "ragtruth-summary",
+          "ragtruth-qa"
+        ],
+        "scorers": [
+          "rouge-l",
+          "bertscore",
+          "nli-deberta",
+          "llm-judge-3b"
+        ],
+        "stack_lr": 0.8014944331769974,
+        "stack_gbm": 0.698385410064647,
+        "best_single": "llm-judge-3b",
+        "best_single_auc": 0.7921684201630963,
+        "singles": {
+          "rouge-l": 0.7238824101068999,
+          "bertscore": 0.6968841107871719,
+          "nli-deberta": 0.7035759179448177,
+          "llm-judge-3b": 0.7921684201630963
+        }
+      }
+    ]
+  },
+  "TRANSFER_summary_tofueval": {
+    "rows": [
+      {
+        "direction": "ragtruth-summary->tofueval",
+        "scorers": [
+          "rouge-l",
+          "bertscore",
+          "nli-deberta",
+          "minicheck",
+          "alignscore",
+          "llm-judge-1.5b",
+          "llm-judge-3b",
+          "llm-judge-7b-4bit"
+        ],
+        "stack_lr": 0.8467922106730892,
+        "stack_gbm": 0.8363002809819581,
+        "best_single": "minicheck",
+        "best_single_auc": 0.8320842312080112,
+        "singles": {
+          "rouge-l": 0.7238824101068999,
+          "bertscore": 0.6968841107871719,
+          "nli-deberta": 0.7035759179448177,
+          "minicheck": 0.8320842312080112,
+          "alignscore": 0.7849339269869438,
+          "llm-judge-1.5b": 0.7545778404529513,
+          "llm-judge-3b": 0.7921684201630963,
+          "llm-judge-7b-4bit": 0.7945543900790131
+        },
+        "minicheck_7b_cascade_auc": 0.8013914416698358,
+        "failed_router_ref": 0.744
+      },
+      {
+        "direction": "tofueval->ragtruth-summary",
+        "scorers": [
+          "rouge-l",
+          "bertscore",
+          "nli-deberta",
+          "minicheck",
+          "alignscore",
+          "llm-judge-1.5b",
+          "llm-judge-3b",
+          "llm-judge-7b-4bit"
+        ],
+        "stack_lr": 0.8261001239576291,
+        "stack_gbm": 0.778383479828713,
+        "best_single": "minicheck",
+        "best_single_auc": 0.7948747746224927,
+        "singles": {
+          "rouge-l": 0.6577959488393057,
+          "bertscore": 0.6400122549019608,
+          "nli-deberta": 0.6551125478927203,
+          "minicheck": 0.7948747746224927,
+          "alignscore": 0.7308076966418752,
+          "llm-judge-1.5b": 0.7197853279242732,
+          "llm-judge-3b": 0.7162145030425964,
+          "llm-judge-7b-4bit": 0.7858420667117423
+        },
+        "minicheck_7b_cascade_auc": 0.7837960615280595,
+        "failed_router_ref": 0.744
+      }
+    ]
+  },
+  "comparisons": {}
+}
