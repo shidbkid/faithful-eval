@@ -276,8 +276,17 @@ _SPACY_NOTE = None
 
 
 def _get_spacy():
+    """Disabled by default — full NER on RAGTruth sources is too slow for
+    Phase 0; set FAITHFUL_EVAL_SPACY=1 to enable. Work order allows skip."""
     global _SPACY, _SPACY_NOTE
     if _SPACY is not None or _SPACY_NOTE is not None:
+        return _SPACY
+    if os.environ.get("FAITHFUL_EVAL_SPACY") != "1":
+        _SPACY = False
+        _SPACY_NOTE = (
+            "spaCy NER skipped (set FAITHFUL_EVAL_SPACY=1 to enable); "
+            "entity_overlap feature is 0"
+        )
         return _SPACY
     try:
         import spacy
@@ -335,7 +344,10 @@ def build_features(examples, task: str, rouge_scores: list[float] | None = None)
     ent_overlaps = [0.0] * len(examples)
     if nlp and nlp is not False:
         try:
-            nlp_ner = spacy_ner_pipe(nlp)
+            import spacy as _spacy
+            nlp_ner = _spacy.load(
+                "en_core_web_sm",
+                disable=["tagger", "parser", "lemmatizer", "attribute_ruler"])
             src_texts = [ex["source"][:6000] for ex in examples]
             sum_texts = [ex["summary"][:3000] for ex in examples]
             src_docs = list(nlp_ner.pipe(src_texts, batch_size=64))
@@ -345,8 +357,8 @@ def build_features(examples, task: str, rouge_scores: list[float] | None = None)
                 eh = {e.text.lower() for e in dh.ents}
                 ent_overlaps[i] = (len(es & eh) / len(eh)) if eh else 1.0
         except Exception as e:
-            global _SPACY_NOTE
-            _SPACY_NOTE = f"spaCy NER failed at runtime ({e}); entity_overlap=0"
+            globals()["_SPACY_NOTE"] = (
+                f"spaCy NER failed at runtime ({e}); entity_overlap=0")
 
     rows = []
     for i, ex in enumerate(examples):
@@ -375,15 +387,6 @@ def build_features(examples, task: str, rouge_scores: list[float] | None = None)
     return np.asarray(rows, dtype=float), feat_names
 
 
-def spacy_ner_pipe(nlp):
-    return spacy_load_ner_only()
-
-
-def spacy_load_ner_only():
-    import spacy
-    return spacy.load("en_core_web_sm", disable=["tagger", "parser", "lemmatizer", "attribute_ruler"])
-
-
 # ---------------------------------------------------------------------------
 # Task 1 — predictability gate
 # ---------------------------------------------------------------------------
@@ -391,7 +394,10 @@ def spacy_load_ner_only():
 def _cv_auc(X, y, n_splits=5, seed=0):
     y = np.asarray(y)
     if len(set(y.tolist())) < 2:
-        return None, float(y.mean())
+        return None, float(y.mean()), np.full(len(y), float(y.mean()))
+    n_splits = min(n_splits, max(2, int(np.min(np.bincount(y.astype(int))))))
+    if n_splits < 2:
+        return None, float(y.mean()), np.full(len(y), float(y.mean()))
     skf = StratifiedKFold(n_splits=n_splits, shuffle=True, random_state=seed)
     probs = np.zeros(len(y), dtype=float)
     for tr, te in skf.split(X, y):
